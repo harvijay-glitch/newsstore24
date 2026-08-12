@@ -1,0 +1,72 @@
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import cron from "node-cron";
+
+import connectDB from "./config/db.js";
+import newsRoutes from "./routes/newsRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
+import translationRoutes from "./routes/translationRoutes.js";
+import authRoutes from "./routes/authRoutes.js";
+import { refreshAllNews } from "./services/newsService.js";
+
+dotenv.config();
+
+const app = express();
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.PUBLIC_SITE_URL,
+  "https://newsstore24.com",
+  "https://www.newsstore24.com",
+  "http://localhost:5173",
+  "http://127.0.0.1:5173",
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || /^https:\/\/.*\.vercel\.app$/.test(origin) || /^http:\/\/localhost:\d+$/.test(origin)) {
+      callback(null, true);
+      return;
+    }
+    callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
+app.use(express.json());
+
+app.use("/api/news", newsRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/translate", translationRoutes);
+
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "🚀 AI News API Running Successfully",
+  });
+});
+
+// Fetch all sections once after the database is connected, then refresh them
+// every day at 6:00 AM in the configured news timezone.
+cron.schedule("0 6 * * *", () => {
+  refreshAllNews().catch((error) => console.error("Scheduled news refresh failed:", error.message));
+}, {
+  timezone: process.env.NEWS_DAILY_TIMEZONE || "Asia/Kolkata",
+});
+
+const PORT = process.env.PORT || 5000;
+
+const startServer = async () => {
+  await connectDB();
+
+  app.listen(PORT, () => {
+    console.log(`🚀 Server Running on Port ${PORT}`);
+    refreshAllNews().catch((error) => console.error("Initial news refresh failed:", error.message));
+  });
+};
+
+startServer().catch((error) => {
+  console.error("Server startup failed:", error.message);
+  process.exit(1);
+});
