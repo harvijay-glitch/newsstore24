@@ -67,7 +67,7 @@ export const getNewsSummary = async (req, res) => {
 
     res.json({ success: true, summary, cached: false });
   } catch (error) {
-    console.error("AI news summary error:", error);
+    console.error("NewsStore24 summary error:", error);
     res.status(500).json({ success: false, message: "AI Summary Failed" });
   }
 };

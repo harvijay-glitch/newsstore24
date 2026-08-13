@@ -1,24 +1,24 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const SITE_NAME = "AI News";
-const DEFAULT_DESCRIPTION = "Latest breaking news, trending stories, AI summaries, business, technology, sports and world updates from AI News.";
+const SITE_NAME = "NewsStore24";
+const DEFAULT_DESCRIPTION = "Latest breaking news, trending stories, AI summaries, business, technology, sports and world updates from NewsStore24.";
 
 const pageMetadata = {
-  "/": { title: "AI News | Latest Breaking News & AI Summaries", description: DEFAULT_DESCRIPTION },
-  "/world": { title: "World News | AI News", description: "Latest world news, global developments and international headlines." },
-  "/business": { title: "Business News | AI News", description: "Latest business news, company updates, markets and the economy." },
-  "/crypto": { title: "Crypto News | AI News", description: "Latest cryptocurrency, blockchain and digital asset news." },
-  "/stock": { title: "Stock Market News | AI News", description: "Latest stock market news, market movements and investor updates." },
-  "/technology": { title: "Technology News | AI News", description: "Latest technology news, AI updates, products and digital trends." },
-  "/sports": { title: "Sports News | AI News", description: "Latest sports news, match updates and major sporting stories." },
-  "/daily-brief": { title: "Daily News Brief | AI News", description: "A quick, AI-powered daily brief of the news that matters." },
-  "/saved": { title: "Saved News | AI News", description: "Your saved stories from AI News.", noIndex: true },
-  "/admin": { title: "Admin Dashboard | AI News", description: "AI News administration dashboard.", noIndex: true },
-  "/about": { title: "About AI News", description: "Learn how AI News helps readers catch up with important stories quickly." },
-  "/contact": { title: "Contact AI News", description: "Get in touch with the AI News team." },
-  "/privacy": { title: "Privacy Policy | AI News", description: "Read the AI News privacy policy." },
-  "/terms": { title: "Terms of Use | AI News", description: "Read the AI News terms of use." },
+  "/": { title: "NewsStore24 | Latest Breaking News & AI Summaries", description: DEFAULT_DESCRIPTION },
+  "/world": { title: "World News | NewsStore24", description: "Latest world news, global developments and international headlines." },
+  "/business": { title: "Business News | NewsStore24", description: "Latest business news, company updates, markets and the economy." },
+  "/crypto": { title: "Crypto News | NewsStore24", description: "Latest cryptocurrency, blockchain and digital asset news." },
+  "/stock": { title: "Stock Market News | NewsStore24", description: "Latest stock market news, market movements and investor updates." },
+  "/technology": { title: "Technology News | NewsStore24", description: "Latest technology news, AI updates, products and digital trends." },
+  "/sports": { title: "Sports News | NewsStore24", description: "Latest sports news, match updates and major sporting stories." },
+  "/daily-brief": { title: "Daily News Brief | NewsStore24", description: "A quick, AI-powered daily brief of the news that matters." },
+  "/saved": { title: "Saved News | NewsStore24", description: "Your saved stories from NewsStore24.", noIndex: true },
+  "/admin": { title: "Admin Dashboard | NewsStore24", description: "NewsStore24 administration dashboard.", noIndex: true },
+  "/about": { title: "About NewsStore24", description: "Learn how NewsStore24 helps readers catch up with important stories quickly." },
+  "/contact": { title: "Contact NewsStore24", description: "Get in touch with the NewsStore24 team." },
+  "/privacy": { title: "Privacy Policy | NewsStore24", description: "Read the NewsStore24 privacy policy." },
+  "/terms": { title: "Terms of Use | NewsStore24", description: "Read the NewsStore24 terms of use." },
 };
 
 function setMeta(selector, attribute, value) {
@@ -75,11 +75,11 @@ function SEO({ article }) {
     }
     canonical.setAttribute("href", canonicalUrl);
 
-    let structuredData = document.head.querySelector('script[data-ai-news-schema="page"]');
+    let structuredData = document.head.querySelector('script[data-newsstore24-schema="page"]');
     if (!structuredData) {
       structuredData = document.createElement("script");
       structuredData.setAttribute("type", "application/ld+json");
-      structuredData.setAttribute("data-ai-news-schema", "page");
+      structuredData.setAttribute("data-newsstore24-schema", "page");
       document.head.appendChild(structuredData);
     }
     const schema = article ? {

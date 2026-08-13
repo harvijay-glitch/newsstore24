@@ -39,7 +39,7 @@ function Footer() {
 
       <div className="border-t border-slate-800 bg-slate-900/40">
         <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 py-3 text-xs text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <span>© {new Date().getFullYear()} AI News. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} NewsStore24. All rights reserved.</span>
           <div className="flex gap-4">{legalLinks.map(([label, path]) => <Link key={path} to={path} className="hover:text-slate-300">{label}</Link>)}</div>
         </div>
       </div>

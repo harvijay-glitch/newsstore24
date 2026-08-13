@@ -59,7 +59,7 @@ function Article({ language = "en" }) {
   const title = article.seoTitle || article.title;
   const visibleTitle = article.originalTitle || article.title || title;
   const sourceExcerpt = article.originalDescription || "";
-  const author = article.authorName || article.author || article.source || "AI News Editorial Desk";
+  const author = article.authorName || article.author || article.source || "NewsStore24 Editorial Desk";
   const keyPoints = article.keyPoints || [];
   const keyFacts = article.keyFacts || [];
   const displayTitle = translatedContent?.title || visibleTitle;
@@ -115,7 +115,7 @@ function Article({ language = "en" }) {
           <p className="mt-2 text-slate-700">Reported by {article.source || "the original publisher"}. The AI Summary and analysis above are original AI-assisted editorial content, not a copy of the source report.</p>
           {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700">Read original article <span aria-hidden="true">↗</span></a>}
         </section>
-        <p className="mt-8 rounded-xl bg-slate-100 p-4 text-sm leading-6 text-slate-600">Editorial disclosure: AI News generates original AI-assisted summaries, key facts, and context from attributed news sources. It does not claim to be the original reporter.</p>
+        <p className="mt-8 rounded-xl bg-slate-100 p-4 text-sm leading-6 text-slate-600">Editorial disclosure: NewsStore24 generates original AI-assisted summaries, key facts, and context from attributed news sources. It does not claim to be the original reporter.</p>
 
         <section className="mt-12 border-t border-slate-200 pt-8">
           <h2 className="text-2xl font-black">Related News</h2>

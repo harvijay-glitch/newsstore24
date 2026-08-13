@@ -28,10 +28,10 @@ import Search from "./pages/Search";
 function App() {
   const location = useLocation();
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem("inkl-dark") === "true");
-  const [language, setLanguage] = useState(() => localStorage.getItem("ai-news-language") || "en");
+  const [language, setLanguage] = useState(() => localStorage.getItem("newsstore24-language") || "en");
   const [newsUpdatedAt, setNewsUpdatedAt] = useState(null);
   const toggleDarkMode = () => setDarkMode((current) => { localStorage.setItem("inkl-dark", String(!current)); return !current; });
-  const changeLanguage = (nextLanguage) => { localStorage.setItem("ai-news-language", nextLanguage); setLanguage(nextLanguage); };
+  const changeLanguage = (nextLanguage) => { localStorage.setItem("newsstore24-language", nextLanguage); setLanguage(nextLanguage); };
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
