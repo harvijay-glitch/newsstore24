@@ -8,7 +8,7 @@ const getApiBaseUrl = () => {
     return "http://localhost:5000/api";
   }
 
-  return "https://api.newsstore24.com";
+  return "https://newsstore24-1.onrender.com/api";
 };
 
 const API = axios.create({
