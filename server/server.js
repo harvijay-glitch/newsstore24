@@ -43,14 +43,15 @@ app.use("/api/translate", translationRoutes);
 app.get("/", (req, res) => {
   res.json({
     success: true,
-    message: "🚀 AI News API Running Successfully",
+    message: "🚀 NewsStore24 API Running Successfully",
   });
 });
 
 // Fetch all sections once after the database is connected, then refresh them
-// every day at 6:00 AM in the configured news timezone.
-cron.schedule("0 6 * * *", () => {
-  refreshAllNews().catch((error) => console.error("Scheduled news refresh failed:", error.message));
+// every hour - international news only
+cron.schedule("0 * * * *", () => {
+  console.log("🌍 Fetching international news update...");
+  refreshAllNews("world").catch((error) => console.error("Scheduled news refresh failed:", error.message));
 }, {
   timezone: process.env.NEWS_DAILY_TIMEZONE || "Asia/Kolkata",
 });
