@@ -8,9 +8,9 @@ function Footer() {
   ];
   const legalLinks = [["About", "/about"], ["Privacy", "/privacy"], ["Terms", "/terms"]];
   const socialLinks = [
-    { label: "Instagram", icon: "◎" },
-    { label: "Facebook", icon: "f" },
-    { label: "X", icon: "𝕏" },
+    { label: "Instagram", icon: "◎", url: "https://instagram.com/newsstore24" },
+    { label: "Facebook", icon: "f", url: "https://facebook.com/newsstore24" },
+    { label: "X", icon: "𝕏", url: "https://x.com/NewsStore24" },
   ];
 
   return (
@@ -22,10 +22,10 @@ function Footer() {
             <span className="hidden h-9 w-px bg-slate-700 sm:block" />
             <p className="max-w-xs text-sm leading-5 text-slate-400">Smarter updates for the stories shaping your day.</p>
             <div className="flex items-center gap-2" aria-label="Social media links">
-              {socialLinks.map(({ label, icon }) => (
-                <button key={label} type="button" title={`${label} link coming soon`} aria-label={label} className="grid h-8 w-8 place-items-center rounded-full border border-slate-700 text-sm font-bold text-slate-300 transition hover:border-red-500 hover:bg-red-600 hover:text-white">
+              {socialLinks.map(({ label, icon, url }) => (
+                <a key={label} href={url} target="_blank" rel="noopener noreferrer" title={label} aria-label={label} className="grid h-8 w-8 place-items-center rounded-full border border-slate-700 text-sm font-bold text-slate-300 transition hover:border-red-500 hover:bg-red-600 hover:text-white">
                   {icon}
-                </button>
+                </a>
               ))}
             </div>
           </div>

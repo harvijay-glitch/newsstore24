@@ -7,6 +7,7 @@ import { calculateAIImportance } from "./aiScoreService.js";
 import { classifyFactCheckStatus } from "./factCheckService.js";
 import { classifyTrendingBadge } from "./trendingBadgeService.js";
 import { calculateReadingTime, createCanonicalKey, isLikelyDuplicateStory } from "./editorialService.js";
+import { postToX } from "./xService.js";
 
 const backfillAIScores = async () => {
   const articlesWithoutScore = await News.find({ aiImportance: { $exists: false } }).limit(100);
@@ -45,7 +46,7 @@ const backfillTrendingBadges = async () => {
   }));
 };
 
-const DAILY_IMPORT_LIMIT = 10;
+const DAILY_IMPORT_LIMIT = 100; // Allow hourly updates (roughly 1 per hour)
 
 const getProcessingDate = (date = new Date()) => {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -111,7 +112,7 @@ export const fetchAndSaveNews = async (category = "General", generateSummaries =
     console.log(`[News import ${processingDate}] GNews returned ${stats.received} articles.`);
 
     for (const article of articles) {
-      if (savedIds.length >= DAILY_IMPORT_LIMIT) break;
+      if (savedIds.length >= 1) break; // Fetch only 1 article per hour
       const canonicalKey = createCanonicalKey(article.title);
       const sourceContentHash = crypto.createHash("sha256")
         .update(`${article.title || ""}\n${article.description || ""}\n${article.content || ""}`.toLowerCase().replace(/\s+/g, " "))
@@ -192,6 +193,12 @@ export const fetchAndSaveNews = async (category = "General", generateSummaries =
         });
         savedIds.push(savedArticle._id);
         stats.saved += 1;
+
+        // Post to X automatically
+        postToX({
+          title: savedArticle.title,
+          url: savedArticle.url,
+        }).catch((error) => console.error("Failed to post to X:", error.message));
       } catch (error) {
         await releaseDailyImportSlot(processingDate);
         if (error?.code === 11000) {
@@ -233,8 +240,8 @@ export const fetchAndSaveNews = async (category = "General", generateSummaries =
   }
 };
 
-export const refreshAllNews = async () => {
-  const categories = ["general", "world", "business", "technology", "sports", "crypto", "stock"];
+export const refreshAllNews = async (specificCategory = null) => {
+  const categories = specificCategory ? [specificCategory] : ["general", "world", "business", "technology", "sports", "crypto", "stock"];
 
   for (const category of categories) {
     await fetchAndSaveNews(category, true);
