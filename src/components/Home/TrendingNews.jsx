@@ -51,8 +51,7 @@ function TrendingNews({ news, loading, filterLabel }) {
                 </div>
                 <div className="flex flex-col items-start gap-2 lg:items-end">
                   <div className="flex flex-wrap gap-2">
-                    <Link to={`/article/${item.slug || item._id || item.id}`} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-white hover:bg-blue-700">Read More</Link>
-                    <button onClick={() => handleSummary(item)} className="rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-white hover:bg-green-700">AI Summary</button>
+                    <Link to={`/article/${item.slug || item._id || item.id}`} className="rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-white hover:bg-blue-700">Read &amp; AI Summary</Link>
                   </div>
                   <button onClick={() => setChatArticle(item)} className="rounded-lg border border-violet-600 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-50">Ask AI</button>
                 </div>
