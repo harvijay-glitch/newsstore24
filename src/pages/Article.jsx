@@ -126,7 +126,7 @@ function Article({ language = "en" }) {
           <h2 className="text-2xl font-black text-violet-950">Why This Matters</h2>
           <p className="mt-3 whitespace-pre-line leading-7 text-violet-950">{displayWhyItMatters}</p>
         </section>
-        {displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2" aria-label="Related news tags">{displayTags.map((tag) => <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800 ring-1 ring-violet-200 transition hover:bg-violet-100">{tag}</Link>)}</div>}
+        {displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2" aria-label="Related news tags">{displayTags.map((tag) => <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="rounded-full bg-white px-3 py-1 text-xs font-black text-black ring-1 ring-violet-200 transition hover:bg-violet-100">{tag}</Link>)}</div>}
 
         <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">Original Source</h2>
