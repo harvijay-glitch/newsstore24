@@ -95,6 +95,7 @@ const startServer = async () => {
 
   app.listen(PORT, () => {
     console.log(`🚀 Server Running on Port ${PORT}`);
+    refreshAllNews("general").catch((error) => console.error("Startup news refresh failed:", error.message));
   });
 };
 
