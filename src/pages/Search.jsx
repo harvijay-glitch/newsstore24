@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { searchNews } from "../services/newsService";
 
 function Search() {
@@ -7,6 +8,14 @@ function Search() {
   const [filters, setFilters] = useState({ category: "", from: "", to: "" });
   const [results, setResults] = useState([]);
   const [searched, setSearched] = useState(false);
+  const [searchParams] = useSearchParams();
+
+  useEffect(() => {
+    const initialQuery = searchParams.get("q") || "";
+    if (!initialQuery) return;
+    setQuery(initialQuery);
+    searchNews(initialQuery, filters).then((articles) => { setResults(articles); setSearched(true); });
+  }, [searchParams]);
 
   const submit = async (event) => {
     event.preventDefault();
