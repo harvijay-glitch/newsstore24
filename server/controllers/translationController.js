@@ -6,7 +6,7 @@ export const translate = async (req, res) => {
     if (!target || (!text && !Array.isArray(texts))) return res.status(400).json({ success: false, message: "Text and target language are required" });
 
     if (Array.isArray(texts)) {
-      const safeTexts = texts.slice(0, 20);
+      const safeTexts = texts.slice(0, 50);
       const translatedTexts = await Promise.all(safeTexts.map((item) => translateText({ text: item, target, source })));
       return res.json({ success: true, translatedTexts });
     }

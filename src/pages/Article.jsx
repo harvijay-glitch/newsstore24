@@ -67,20 +67,21 @@ function Article({ language = "en" }) {
         article.originalDescription || article.description || "",
         article.aiSummary || article.description || "",
         article.whyThisMatters || article.whyItMatters || "",
-        ...(article.keyPoints || []),
-        ...(article.keyFacts || []),
+        ...keyPoints,
+        ...keyFacts,
       ];
       try {
         const translated = await translateTexts(fields, language);
         if (!active) return;
-        const keyPointCount = (article.keyPoints || []).length;
+        const keyPointCount = keyPoints.length;
+        const keyFactCount = keyFacts.length;
         setTranslatedContent({
           title: translated[0] || fields[0],
           description: translated[1] || fields[1],
           summary: translated[2] || fields[2],
           whyItMatters: translated[3] || fields[3],
-          keyPoints: translated.slice(4, 4 + keyPointCount),
-          keyFacts: translated.slice(4 + keyPointCount),
+          keyPoints: translated.slice(4, 4 + keyPointCount).map((item, index) => item || fields[4 + index]),
+          keyFacts: translated.slice(4 + keyPointCount, 4 + keyPointCount + keyFactCount).map((item, index) => item || fields[4 + keyPointCount + index]),
         });
       } catch {
         if (active) setTranslatedContent(null);
@@ -104,14 +105,16 @@ function Article({ language = "en" }) {
   const displayTitle = translatedContent?.title || visibleTitle;
   const displayExcerpt = translatedContent?.description || sourceExcerpt;
   const summaryText = translatedContent?.summary || article.aiSummary || article.description || "Article summary is not available yet.";
-  const displaySummary = [...String(summaryText).split(/(?<=[.!?])\s+/).filter(Boolean), "Additional article context should be verified from the original source.", "The original report should be checked for later updates.", "Important details should be confirmed with the publisher.", "Readers should review the complete source article.", "Further reporting may add useful context.", "The available summary reflects the current article details.", "Source attribution should be considered when reading this summary.", "Any developing information may change as updates arrive.", "The original source remains the primary reference."]
+  const summaryLines = String(summaryText).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const displaySummary = [...summaryLines, ...(translatedContent ? [] : ["Additional article context should be verified from the original source.", "The original report should be checked for later updates.", "Important details should be confirmed with the publisher.", "Readers should review the complete source article.", "Further reporting may add useful context.", "The available summary reflects the current article details.", "Source attribution should be considered when reading this summary.", "Any developing information may change as updates arrive.", "The original source remains the primary reference."])]
     .filter((item, index, items) => items.indexOf(item) === index)
     .slice(0, 10)
     .join("\n");
   const displayKeyPoints = translatedContent?.keyPoints?.length ? translatedContent.keyPoints : keyPoints;
   const displayKeyFacts = translatedContent?.keyFacts?.length ? translatedContent.keyFacts : keyFacts;
   const whyText = translatedContent?.whyItMatters || article.whyThisMatters || article.whyItMatters || "Review the original source for the latest context and updates.";
-  const displayWhyItMatters = [...String(whyText).split(/(?<=[.!?])\s+/).filter(Boolean), "The story may develop as more information becomes available.", "Its wider impact depends on verified details and responses.", "Check the original source for follow-up reporting.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "The original source remains the primary reference."]
+  const whyLines = String(whyText).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const displayWhyItMatters = [...whyLines, ...(translatedContent ? [] : ["The story may develop as more information becomes available.", "Its wider impact depends on verified details and responses.", "Check the original source for follow-up reporting.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "The original source remains the primary reference."])]
     .filter((item, index, items) => items.indexOf(item) === index)
     .slice(0, 10)
     .join("\n");
