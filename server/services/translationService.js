@@ -31,6 +31,13 @@ export const translateText = async ({ text, target, source = "en" }) => {
   if (!text?.trim() || source === target) return text;
 
   try {
+    const googleTranslation = await translateWithGoogleFallback({ text, target, source });
+    if (googleTranslation && googleTranslation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return googleTranslation;
+  } catch (error) {
+    console.warn("Google translation unavailable:", error.message);
+  }
+
+  try {
     const response = await axios.get(TRANSLATE_URL, {
       params: { q: text.slice(0, 450), langpair: `${source}|${target}` },
       timeout: 15000,
@@ -39,13 +46,6 @@ export const translateText = async ({ text, target, source = "en" }) => {
     if (translation && translation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return translation;
   } catch (error) {
     console.warn("MyMemory translation unavailable:", error.message);
-  }
-
-  try {
-    const googleTranslation = await translateWithGoogleFallback({ text, target, source });
-    if (googleTranslation && googleTranslation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return googleTranslation;
-  } catch (error) {
-    console.warn("Google translation fallback unavailable:", error.message);
   }
 
   const fallbackTranslation = await translateWithGemini({ text, target });
