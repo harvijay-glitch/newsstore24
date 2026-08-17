@@ -86,6 +86,7 @@ function LatestNews({ news, loading, filterLabel }) {
               <div className="p-5">
                 <p className="text-sm font-semibold text-red-600">{item.source?.name || item.source}</p>
                 <h3 className="mt-3 text-xl font-bold line-clamp-2">{item.title}</h3>
+                <p className="mt-2 text-xs font-bold text-slate-700">By NewsStore24 Editorial Desk</p>
                 <p className="mt-3 text-gray-600 line-clamp-3">{item.description}</p>
                 <p className="mt-3 text-xs font-medium text-slate-500">{formatArticleDate(item.publishedAt)}</p>
                 <div className="mt-3 flex flex-wrap gap-2"><AIImportanceScore score={item.aiImportance} factors={item.aiScoreFactors} /><FactCheckBadge status={item.factCheckStatus} reason={item.factCheckReason} /><TrendingBadge badge={item.trendingBadge} reason={item.trendingBadgeReason} /></div>
