@@ -96,7 +96,7 @@ function Article({ language = "en" }) {
   const title = article.seoTitle || article.title;
   const visibleTitle = article.originalTitle || article.title || title;
   const sourceExcerpt = article.originalDescription || "";
-  const author = article.authorName || article.author || article.source || "NewsStore24 Editorial Desk";
+  const author = "NewsStore24 Editorial Desk";
   const articleDetail = article.description || "Details are not available for this article yet.";
   const minimumLines = [articleDetail, "Additional details should be checked against the original source.", "The story may receive further updates.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "Further reporting may clarify unresolved details.", "The original source remains the primary reference."];
   const keyPoints = [...(article.keyPoints || []), ...minimumLines].filter((item, index, items) => items.indexOf(item) === index).slice(0, 10);
