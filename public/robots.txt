@@ -1,2 +1,9 @@
 User-agent: *
 Allow: /
+
+Disallow: /admin
+Disallow: /admin/
+Disallow: /saved
+Disallow: /search
+
+Sitemap: https://www.newsstore24.com/sitemap.xml

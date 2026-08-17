@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 const SITE_NAME = "NewsStore24";
 const DEFAULT_DESCRIPTION = "Latest breaking news, trending stories, AI summaries, business, technology, sports and world updates from NewsStore24.";
+const configuredSiteUrl = import.meta.env.VITE_SITE_URL?.trim().replace(/\/$/, "");
 
 const pageMetadata = {
   "/": { title: "NewsStore24 | Latest Breaking News & AI Summaries", description: DEFAULT_DESCRIPTION },
@@ -14,6 +15,7 @@ const pageMetadata = {
   "/sports": { title: "Sports News | NewsStore24", description: "Latest sports news, match updates and major sporting stories." },
   "/daily-brief": { title: "Daily News Brief | NewsStore24", description: "A quick, AI-powered daily brief of the news that matters." },
   "/saved": { title: "Saved News | NewsStore24", description: "Your saved stories from NewsStore24.", noIndex: true },
+  "/search": { title: "Search News | NewsStore24", description: "Search NewsStore24.", noIndex: true },
   "/admin": { title: "Admin Dashboard | NewsStore24", description: "NewsStore24 administration dashboard.", noIndex: true },
   "/about": { title: "About NewsStore24", description: "Learn how NewsStore24 helps readers catch up with important stories quickly." },
   "/contact": { title: "Contact NewsStore24", description: "Get in touch with the NewsStore24 team." },
@@ -36,10 +38,12 @@ function SEO({ article }) {
   const { pathname } = useLocation();
 
   useEffect(() => {
+    const isAdminPage = pathname.startsWith("/admin");
+    const isPrivatePage = pathname === "/saved" || pathname === "/search";
     const metadata = article
       ? { title: article.seoTitle || article.title, description: article.metaDescription || article.description || DEFAULT_DESCRIPTION }
-      : (pageMetadata[pathname] || { title: `${SITE_NAME} | Latest News`, description: DEFAULT_DESCRIPTION });
-    const origin = window.location.origin;
+      : { ...(pageMetadata[pathname] || { title: `${SITE_NAME} | Latest News`, description: DEFAULT_DESCRIPTION }), noIndex: isAdminPage || isPrivatePage };
+    const origin = configuredSiteUrl || window.location.origin;
     const canonicalUrl = `${origin}${pathname}`;
     const storedImage = article?.generatedImageUrl || article?.image || "/favicon.ico";
     const imageUrl = storedImage.startsWith("/") ? `${origin}${storedImage}` : storedImage;
@@ -66,6 +70,9 @@ function SEO({ article }) {
       setMeta('meta[property="article:section"]', 'property="article:section"', article.category || "General");
     }
     setMeta('meta[name="robots"]', 'name="robots"', metadata.noIndex ? "noindex, nofollow" : "index, follow");
+
+    const verificationToken = import.meta.env.VITE_GOOGLE_SITE_VERIFICATION?.trim();
+    if (verificationToken) setMeta('meta[name="google-site-verification"]', 'name="google-site-verification"', verificationToken);
 
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) {
