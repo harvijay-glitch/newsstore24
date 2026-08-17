@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
 import { getNewsArticle, getRelatedNews } from "../services/newsService";
+import { getNewsAIEnrichment } from "../services/aiService";
 import { translateTexts } from "../services/translationService";
 import { formatArticleDate } from "../utils/articleDate";
 
@@ -16,6 +17,9 @@ function Article({ language = "en" }) {
   const [showMore, setShowMore] = useState(false);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState([]);
+  const [relatedSummary, setRelatedSummary] = useState(null);
+  const [relatedSummaryTitle, setRelatedSummaryTitle] = useState("");
+  const [loadingRelatedSummary, setLoadingRelatedSummary] = useState(false);
 
   useEffect(() => {
     getNewsArticle(id).then(setArticle).catch(() => setError("This news article could not be loaded."));
@@ -52,6 +56,20 @@ function Article({ language = "en" }) {
     setComments(next);
     localStorage.setItem(`newsstore24-comments-${id}`, JSON.stringify(next));
     setComment("");
+  };
+
+  const showRelatedSummary = async (item) => {
+    setRelatedSummaryTitle(item.seoTitle || item.title || "Related news");
+    setRelatedSummary(null);
+    setLoadingRelatedSummary(true);
+    try {
+      const result = await getNewsAIEnrichment(item._id || item.id);
+      setRelatedSummary(result || { summary: "Summary is not available for this article." });
+    } catch {
+      setRelatedSummary({ summary: "Unable to load the AI summary right now. Please try again." });
+    } finally {
+      setLoadingRelatedSummary(false);
+    }
   };
 
   useEffect(() => {
@@ -192,9 +210,13 @@ function Article({ language = "en" }) {
 
         <section className="mt-12 border-t border-slate-200 pt-8">
           <h2 className="text-2xl font-black">Related News</h2>
-          {relatedNews.length ? <div className="mt-5 grid gap-4 sm:grid-cols-2">{relatedNews.map((item) => <Link key={item._id} to={`/article/${item.slug || item._id}`} className="rounded-xl border border-slate-200 p-4 transition hover:border-blue-400 hover:shadow-sm"><p className="text-xs font-bold text-red-600">{item.source}</p><h3 className="mt-1 font-bold line-clamp-2">{item.seoTitle || item.title}</h3></Link>)}</div> : <p className="mt-4 text-slate-500">No related stories are available yet.</p>}
+          {relatedNews.length ? <div className="mt-5 grid gap-5 sm:grid-cols-2">{relatedNews.map((item) => <article key={item._id || item.id} className="overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-blue-400 hover:shadow-sm">
+            {(item.generatedImageUrl || item.image) && <img src={item.generatedImageUrl || item.image} alt={item.seoTitle || item.title} className="aspect-video w-full object-cover" />}
+            <div className="p-4"><p className="text-xs font-bold text-red-600">{item.source?.name || item.source || "NewsStore24"}</p><h3 className="mt-1 line-clamp-2 text-lg font-bold">{item.seoTitle || item.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">{item.description || "Read the latest context from this related story."}</p><div className="mt-4 flex flex-wrap gap-2"><Link to={`/article/${item.slug || item._id || item.id}`} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Read Article</Link><button type="button" onClick={() => showRelatedSummary(item)} className="rounded-lg border border-violet-600 px-3 py-2 text-xs font-semibold text-violet-700 hover:bg-violet-50">AI Summary</button></div></div>
+          </article>)}</div> : <p className="mt-4 text-slate-500">No related stories are available yet.</p>}
         </section>
       </article>
+      {(loadingRelatedSummary || relatedSummary) && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-label="Related article AI summary"><div className="max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6"><h2 className="text-2xl font-bold">AI Summary</h2><p className="mt-1 line-clamp-2 text-sm text-slate-500">{relatedSummaryTitle}</p>{loadingRelatedSummary ? <p className="mt-5">Generating complete AI brief...</p> : <div className="mt-5 space-y-5 text-slate-700"><div><h3 className="font-bold">AI Summary</h3><p className="mt-1 whitespace-pre-wrap">{relatedSummary.summary}</p></div>{relatedSummary.keyPoints?.length > 0 && <div><h3 className="font-bold">Key Points</h3><ul className="mt-1 list-disc pl-5">{relatedSummary.keyPoints.map((point) => <li key={point}>{point}</li>)}</ul></div>}{relatedSummary.keyFacts?.length > 0 && <div><h3 className="font-bold">Key Facts</h3><ul className="mt-1 list-disc pl-5">{relatedSummary.keyFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul></div>}{(relatedSummary.whyThisMatters || relatedSummary.whyItMatters) && <div><h3 className="font-bold">Why This Matters</h3><p className="mt-1 whitespace-pre-line">{relatedSummary.whyThisMatters || relatedSummary.whyItMatters}</p></div>}</div>}<button type="button" onClick={() => { setRelatedSummary(null); setRelatedSummaryTitle(""); }} className="mt-6 rounded-lg bg-red-600 px-5 py-2 text-white hover:bg-red-700">Close</button></div></div>}
     </>
   );
 }
