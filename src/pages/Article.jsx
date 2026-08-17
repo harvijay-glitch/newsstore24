@@ -11,11 +11,48 @@ function Article({ language = "en" }) {
   const [relatedNews, setRelatedNews] = useState([]);
   const [error, setError] = useState("");
   const [translatedContent, setTranslatedContent] = useState(null);
+  const [liked, setLiked] = useState(false);
+  const [bookmarked, setBookmarked] = useState(false);
+  const [showMore, setShowMore] = useState(false);
+  const [comment, setComment] = useState("");
+  const [comments, setComments] = useState([]);
 
   useEffect(() => {
     getNewsArticle(id).then(setArticle).catch(() => setError("This news article could not be loaded."));
     getRelatedNews(id).then(setRelatedNews).catch(() => setRelatedNews([]));
+    setLiked(localStorage.getItem(`newsstore24-liked-${id}`) === "true");
+    setBookmarked(localStorage.getItem(`newsstore24-bookmarked-${id}`) === "true");
+    setComments(JSON.parse(localStorage.getItem(`newsstore24-comments-${id}`) || "[]"));
   }, [id]);
+
+  const toggleLike = () => {
+    const next = !liked;
+    setLiked(next);
+    localStorage.setItem(`newsstore24-liked-${id}`, String(next));
+  };
+
+  const toggleSave = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "https://newsstore24-1.onrender.com/api"}/news/bookmark/${article._id}`, { method: "PATCH" });
+      if (response.ok) setBookmarked((current) => { const next = !current; localStorage.setItem(`newsstore24-bookmarked-${id}`, String(next)); return next; });
+    } catch { setBookmarked((current) => !current); }
+  };
+
+  const shareArticle = async () => {
+    const url = window.location.href;
+    if (navigator.share) await navigator.share({ title: displayTitle, text: displayExcerpt, url });
+    else await navigator.clipboard.writeText(url);
+  };
+
+  const submitComment = (event) => {
+    event.preventDefault();
+    const value = comment.trim();
+    if (!value) return;
+    const next = [...comments, { text: value, createdAt: new Date().toISOString() }];
+    setComments(next);
+    localStorage.setItem(`newsstore24-comments-${id}`, JSON.stringify(next));
+    setComment("");
+  };
 
   useEffect(() => {
     if (!article || language === "en") {
@@ -99,6 +136,16 @@ function Article({ language = "en" }) {
         {displayExcerpt && <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">{displayExcerpt}</p>}
         {articleImage && <img src={articleImage} alt={displayTitle} className="mt-7 aspect-video w-full rounded-2xl object-cover shadow-sm" />}
 
+        <div className="mt-4 flex flex-wrap items-center gap-2 border-y border-slate-200 py-3">
+          <a href="https://news.google.com/search?q=NewsStore24" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-red-500 px-3 py-2 text-sm font-bold text-slate-900 hover:bg-red-50">Prefer us on <span className="text-blue-500">G</span></a>
+          <button type="button" onClick={toggleLike} aria-label="Like article" className={`rounded-lg px-3 py-2 text-lg ${liked ? "bg-blue-100 text-blue-700" : "border border-slate-200 text-slate-700"}`}>👍</button>
+          <button type="button" onClick={() => document.getElementById("article-comments")?.scrollIntoView({ behavior: "smooth" })} aria-label="Comment on article" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-700">▤</button>
+          <a href={`https://wa.me/?text=${encodeURIComponent(`${displayTitle} ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-green-600">●</a>
+          <button type="button" onClick={shareArticle} aria-label="Share article" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-700">⌯</button>
+          <button type="button" onClick={toggleSave} aria-label="Bookmark article" className={`rounded-lg border border-slate-200 px-3 py-2 text-lg ${bookmarked ? "text-red-600" : "text-slate-700"}`}>♡</button>
+          <div className="relative"><button type="button" onClick={() => setShowMore((current) => !current)} aria-label="More article actions" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-700">⋮</button>{showMore && <div className="absolute right-0 top-12 z-10 w-44 rounded-xl border border-slate-200 bg-white p-2 text-sm shadow-xl"><button type="button" onClick={() => navigator.clipboard.writeText(window.location.href)} className="block w-full rounded-lg px-3 py-2 text-left hover:bg-slate-100">Copy link</button><Link to="/contact" className="block rounded-lg px-3 py-2 hover:bg-slate-100">Report / Contact</Link></div>}</div>
+        </div>
+
         <div className="mt-6 grid gap-2 border-y border-slate-200 py-4 text-sm text-slate-600 sm:grid-cols-2 sm:gap-x-8">
           <p><span className="font-bold text-slate-900">By </span><Link to={`/author/${encodeURIComponent(author)}`} className="text-blue-600 hover:underline">{author}</Link></p>
           <p className="mt-1"><span className="font-bold text-slate-900">Reading time: </span>{article.readingTime || 1} min read</p>
@@ -132,6 +179,11 @@ function Article({ language = "en" }) {
           <h2 className="text-xl font-black">Original Source</h2>
           <p className="mt-2 text-slate-700">Reported by {article.source || "the original publisher"}. The AI Summary and analysis above are original AI-assisted editorial content, not a copy of the source report.</p>
           {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700">Read original article <span aria-hidden="true">↗</span></a>}
+        </section>
+        <section id="article-comments" className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-black">Comments</h2>
+          <form onSubmit={submitComment} className="mt-4 flex gap-2"><input value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Write a comment" className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2" /><button className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">Post</button></form>
+          {comments.map((item, index) => <p key={`${item.createdAt}-${index}`} className="mt-3 rounded-lg bg-slate-50 p-3 text-sm text-slate-700">{item.text}</p>)}
         </section>
         <p className="mt-8 rounded-xl bg-slate-100 p-4 text-sm leading-6 text-slate-600">Editorial disclosure: NewsStore24 generates original AI-assisted summaries, key facts, and context from attributed news sources. It does not claim to be the original reporter.</p>
 
