@@ -2,10 +2,6 @@ import { Link } from "react-router-dom";
 import BrandLogo from "./BrandLogo";
 
 function Footer() {
-  const links = [
-    ["Home", "/"], ["World", "/world"], ["Business", "/business"], ["Technology", "/technology"],
-    ["Sports", "/sports"], ["Crypto", "/crypto"], ["Contact", "/contact"],
-  ];
   const legalLinks = [["About", "/about"], ["Privacy", "/privacy"], ["Terms", "/terms"]];
   const socialLinks = [
     { label: "Instagram", icon: "◎", url: "https://instagram.com/newsstore24" },
@@ -32,9 +28,6 @@ function Footer() {
 
         </div>
 
-        <div className="mt-6 border-t border-slate-800 pt-5 text-sm">
-          {links.map(([label, path]) => <Link key={path} to={path} style={{ marginRight: "1.5rem", marginBottom: "0.5rem" }} className="inline-block transition hover:text-red-400">{label}</Link>)}
-        </div>
       </div>
 
       <div className="border-t border-slate-800 bg-slate-900/40">
