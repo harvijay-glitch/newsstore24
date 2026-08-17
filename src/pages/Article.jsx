@@ -99,13 +99,6 @@ function Article({ language = "en" }) {
         {displayExcerpt && <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">{displayExcerpt}</p>}
         {articleImage && <img src={articleImage} alt={displayTitle} className="mt-7 aspect-video w-full rounded-2xl object-cover shadow-sm" />}
 
-        <section className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
-          <h2 className="text-sm font-black uppercase tracking-[0.16em] text-slate-700">SEO details</h2>
-          <p className="mt-3 text-sm font-semibold text-slate-900">{article.seoTitle || displayTitle}</p>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{article.metaDescription || displayExcerpt || "NewsStore24 article summary and latest context."}</p>
-          {displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{displayTags.map((tag) => <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">{tag}</span>)}</div>}
-        </section>
-
         <div className="mt-6 grid gap-2 border-y border-slate-200 py-4 text-sm text-slate-600 sm:grid-cols-2 sm:gap-x-8">
           <p><span className="font-bold text-slate-900">By </span><Link to={`/author/${encodeURIComponent(author)}`} className="text-blue-600 hover:underline">{author}</Link></p>
           <p className="mt-1"><span className="font-bold text-slate-900">Reading time: </span>{article.readingTime || 1} min read</p>
@@ -132,6 +125,7 @@ function Article({ language = "en" }) {
         <section className="mt-8 rounded-2xl border border-violet-200 bg-violet-50 p-6">
           <h2 className="text-2xl font-black text-violet-950">Why This Matters</h2>
           <p className="mt-3 whitespace-pre-line leading-7 text-violet-950">{displayWhyItMatters}</p>
+          {displayTags.length > 0 && <div className="mt-5 flex flex-wrap gap-2">{displayTags.map((tag) => <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-violet-800 ring-1 ring-violet-200">{tag}</span>)}</div>}
         </section>
 
         <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
