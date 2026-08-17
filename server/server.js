@@ -1,7 +1,6 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import cron from "node-cron";
 import bcrypt from "bcryptjs";
 
 import connectDB from "./config/db.js";
@@ -49,19 +48,19 @@ app.get("/", (req, res) => {
   });
 });
 
-// Check frequently, while the persisted import gate enforces one article every
-// 90 minutes and a maximum of ten articles per processing day.
+// Import one category every 90 minutes. The persisted database gate remains the
+// final guard when Render restarts or multiple instances overlap briefly.
 const scheduledCategories = ["general", "world", "business", "technology", "sports", "crypto", "stock"];
 let scheduledCategoryIndex = 0;
 
-cron.schedule("*/5 * * * *", () => {
+const runScheduledNewsRefresh = () => {
   const category = scheduledCategories[scheduledCategoryIndex % scheduledCategories.length];
   scheduledCategoryIndex += 1;
   console.log(`📰 Checking scheduled ${category} news update...`);
   refreshAllNews(category).catch((error) => console.error("Scheduled news refresh failed:", error.message));
-}, {
-  timezone: process.env.NEWS_DAILY_TIMEZONE || "Asia/Kolkata",
-});
+};
+
+const NEWS_REFRESH_INTERVAL_MS = 90 * 60 * 1000;
 
 const PORT = process.env.PORT || 5000;
 
@@ -95,7 +94,8 @@ const startServer = async () => {
 
   app.listen(PORT, () => {
     console.log(`🚀 Server Running on Port ${PORT}`);
-    refreshAllNews("general").catch((error) => console.error("Startup news refresh failed:", error.message));
+    runScheduledNewsRefresh();
+    setInterval(runScheduledNewsRefresh, NEWS_REFRESH_INTERVAL_MS);
   });
 };
 
