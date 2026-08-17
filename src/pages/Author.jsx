@@ -4,9 +4,10 @@ import { getAuthorArticles } from "../services/newsService";
 
 function Author() {
   const { name } = useParams();
-  const [data, setData] = useState({ author: decodeURIComponent(name || ""), articles: [] });
+  const authorName = decodeURIComponent(name || "NewsStore24 Editorial Desk");
+  const [data, setData] = useState({ author: authorName, articles: [] });
 
-  useEffect(() => { getAuthorArticles(name).then(setData).catch(() => setData({ author: decodeURIComponent(name || ""), articles: [] })); }, [name]);
+  useEffect(() => { getAuthorArticles(name).then(setData).catch(() => setData({ author: authorName, articles: [] })); }, [name, authorName]);
 
   return <main className="mx-auto max-w-5xl px-6 py-12">
     <p className="text-sm font-bold uppercase tracking-wide text-red-600">Author profile</p>

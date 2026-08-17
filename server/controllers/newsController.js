@@ -610,7 +610,7 @@ export const createAdminPost = async (req, res) => {
       seoTitle = "",
       metaDescription = "",
       tags = [],
-      author = "Admin",
+      author = "NewsStore24 Editorial Desk",
       status = "draft",
       publishedAt,
     } = req.body || {};
@@ -638,7 +638,7 @@ export const createAdminPost = async (req, res) => {
       seoTitle: String(seoTitle || ""),
       metaDescription: String(metaDescription || ""),
       keywords: Array.isArray(tags) ? tags.map((tag) => String(tag).trim()).filter(Boolean) : String(tags || "").split(",").map((tag) => tag.trim()).filter(Boolean),
-      author: String(author || "Admin").trim(),
+      author: String(author || "NewsStore24 Editorial Desk").trim(),
       publishStatus: status === "published" ? "published" : "draft",
       publishedAt: status === "published" ? new Date(publishedAt || Date.now()) : null,
       url: `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${finalSlug}`,
@@ -704,7 +704,7 @@ export const updateAdminPost = async (req, res) => {
     post.keywords = Array.isArray(tags)
       ? tags.map((tag) => String(tag).trim()).filter(Boolean)
       : String(tags || "").split(",").map((tag) => tag.trim()).filter(Boolean);
-    post.author = String(author || post.author || "Admin").trim();
+    post.author = String(author || post.author || "NewsStore24 Editorial Desk").trim();
     post.publishStatus = status === "published" ? "published" : "draft";
     post.publishedAt = status === "published" ? new Date(publishedAt || post.publishedAt || Date.now()) : null;
     post.url = `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${post.slug}`;

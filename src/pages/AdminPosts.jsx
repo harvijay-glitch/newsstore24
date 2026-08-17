@@ -200,7 +200,7 @@ export function AdminPostFormPage() {
     seoTitle: "",
     metaDescription: "",
     tags: "",
-    author: "Admin",
+    author: "NewsStore24 Editorial Desk",
     status: "draft",
   });
 
@@ -220,7 +220,7 @@ export function AdminPostFormPage() {
           seoTitle: post.seoTitle || "",
           metaDescription: post.metaDescription || "",
           tags: Array.isArray(post.tags) ? post.tags.join(", ") : "",
-          author: post.author || "Admin",
+          author: post.author || "NewsStore24 Editorial Desk",
           status: post.status || "draft",
         });
       } catch (error) {
