@@ -47,11 +47,16 @@ app.get("/", (req, res) => {
   });
 });
 
-// Fetch all sections once after the database is connected, then refresh them
-// every hour - international news only
-cron.schedule("0 * * * *", () => {
-  console.log("🌍 Fetching international news update...");
-  refreshAllNews("world").catch((error) => console.error("Scheduled news refresh failed:", error.message));
+// Check frequently, while the persisted import gate enforces one article every
+// 90 minutes and a maximum of ten articles per processing day.
+const scheduledCategories = ["general", "world", "business", "technology", "sports", "crypto", "stock"];
+let scheduledCategoryIndex = 0;
+
+cron.schedule("*/5 * * * *", () => {
+  const category = scheduledCategories[scheduledCategoryIndex % scheduledCategories.length];
+  scheduledCategoryIndex += 1;
+  console.log(`📰 Checking scheduled ${category} news update...`);
+  refreshAllNews(category).catch((error) => console.error("Scheduled news refresh failed:", error.message));
 }, {
   timezone: process.env.NEWS_DAILY_TIMEZONE || "Asia/Kolkata",
 });
@@ -63,7 +68,6 @@ const startServer = async () => {
 
   app.listen(PORT, () => {
     console.log(`🚀 Server Running on Port ${PORT}`);
-    refreshAllNews().catch((error) => console.error("Initial news refresh failed:", error.message));
   });
 };
 

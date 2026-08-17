@@ -46,7 +46,8 @@ const backfillTrendingBadges = async () => {
   }));
 };
 
-const DAILY_IMPORT_LIMIT = 100; // Allow hourly updates (roughly 1 per hour)
+const DAILY_IMPORT_LIMIT = 10;
+const IMPORT_INTERVAL_MS = 90 * 60 * 1000;
 
 const getProcessingDate = (date = new Date()) => {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -57,19 +58,28 @@ const getProcessingDate = (date = new Date()) => {
 };
 
 const reserveDailyImportSlot = async (processingDate) => {
-  // Create the daily record once, then atomically reserve one of its ten slots.
+  // Create the daily record once, then atomically reserve one slot every 90 minutes.
   try {
     await DailyNewsProcessing.updateOne(
       { processingDate },
-      { $setOnInsert: { processingDate, importedCount: 0, aiCompletedCount: 0, aiFailedCount: 0 } },
+      { $setOnInsert: { processingDate, importedCount: 0, lastImportedAt: null, aiCompletedCount: 0, aiFailedCount: 0 } },
       { upsert: true }
     );
   } catch (error) {
     if (error?.code !== 11000) throw error;
   }
+  const earliestNextImport = new Date(Date.now() - IMPORT_INTERVAL_MS);
   return DailyNewsProcessing.findOneAndUpdate(
-    { processingDate, importedCount: { $lt: DAILY_IMPORT_LIMIT } },
-    { $inc: { importedCount: 1 } },
+    {
+      processingDate,
+      importedCount: { $lt: DAILY_IMPORT_LIMIT },
+      $or: [
+        { lastImportedAt: null },
+        { lastImportedAt: { $exists: false } },
+        { lastImportedAt: { $lte: earliestNextImport } },
+      ],
+    },
+    { $inc: { importedCount: 1 }, $set: { lastImportedAt: new Date() } },
     { new: true }
   );
 };
@@ -77,7 +87,7 @@ const reserveDailyImportSlot = async (processingDate) => {
 const releaseDailyImportSlot = async (processingDate) => {
   await DailyNewsProcessing.updateOne(
     { processingDate, importedCount: { $gt: 0 } },
-    { $inc: { importedCount: -1 } }
+    { $inc: { importedCount: -1 }, $set: { lastImportedAt: null } }
   );
 };
 

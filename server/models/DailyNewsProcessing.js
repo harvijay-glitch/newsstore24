@@ -6,6 +6,7 @@ const dailyNewsProcessingSchema = new mongoose.Schema(
   {
     processingDate: { type: String, required: true, unique: true, index: true },
     importedCount: { type: Number, default: 0, min: 0 },
+    lastImportedAt: { type: Date, default: null },
     aiCompletedCount: { type: Number, default: 0, min: 0 },
     aiFailedCount: { type: Number, default: 0, min: 0 },
   },
