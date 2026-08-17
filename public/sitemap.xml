@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://www.newsstore24.com/</loc><changefreq>hourly</changefreq><priority>1.0</priority></url>
+  <url><loc>https://www.newsstore24.com/world</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.newsstore24.com/business</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.newsstore24.com/technology</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.newsstore24.com/sports</loc><changefreq>hourly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://www.newsstore24.com/crypto</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.newsstore24.com/stock</loc><changefreq>hourly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.newsstore24.com/daily-brief</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.newsstore24.com/about</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.newsstore24.com/contact</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://www.newsstore24.com/privacy</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+  <url><loc>https://www.newsstore24.com/terms</loc><changefreq>yearly</changefreq><priority>0.2</priority></url>
+</urlset>

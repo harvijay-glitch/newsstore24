@@ -36,7 +36,8 @@ function App() {
 
   return (
     <div className={darkMode ? "min-h-screen bg-slate-900 text-slate-100" : "min-h-screen bg-white text-slate-950"}>
-      {!isAdminRoute && <><SEO /><LanguageBar language={language} onLanguageChange={changeLanguage} /><Navbar darkMode={darkMode} onToggleDarkMode={toggleDarkMode} newsUpdatedAt={newsUpdatedAt} /><BreakingNews /></>}
+      <SEO />
+      {!isAdminRoute && <><LanguageBar language={language} onLanguageChange={changeLanguage} /><Navbar darkMode={darkMode} onToggleDarkMode={toggleDarkMode} newsUpdatedAt={newsUpdatedAt} /><BreakingNews /></>}
 
       <Routes>
         <Route path="/" element={<Home language={language} onNewsUpdated={setNewsUpdatedAt} />} />
