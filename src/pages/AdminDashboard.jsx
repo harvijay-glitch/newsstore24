@@ -10,6 +10,9 @@ const sidebarItems = [
   { label: "Media", path: "/admin/media" },
   { label: "Pages", path: "/admin/pages" },
   { label: "Analytics", path: "/admin/analytics" },
+  { label: "Advanced Analytics", path: "/admin/advanced-analytics" },
+  { label: "Monetization", path: "/admin/monetization" },
+  { label: "Advanced AI", path: "/admin/advanced-ai" },
   { label: "Settings", path: "/admin/settings" },
   { label: "Logout", path: null },
 ];

@@ -23,6 +23,7 @@ import Search from "./pages/Search";
 import AdminMedia from "./pages/AdminMedia";
 import AdminPages from "./pages/AdminPages";
 import CmsPageView from "./pages/CmsPageView";
+import { AdvancedAIPage, AdvancedAnalyticsPage, MonetizationPage } from "./pages/AdminAdvanced";
 
 function App() {
   const location = useLocation();
@@ -62,6 +63,9 @@ function App() {
         <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
         <Route path="/admin/pages" element={<AdminRoute><AdminPages /></AdminRoute>} />
         <Route path="/admin/analytics" element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
+        <Route path="/admin/advanced-analytics" element={<AdminRoute><AdvancedAnalyticsPage /></AdminRoute>} />
+        <Route path="/admin/monetization" element={<AdminRoute><MonetizationPage /></AdminRoute>} />
+        <Route path="/admin/advanced-ai" element={<AdminRoute><AdvancedAIPage /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><AdminPlaceholderPage title="Settings" eyebrow="Settings" description="Settings placeholder. Configuration and preferences will be added later." /></AdminRoute>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/article/:id" element={<Article language={language} />} />
