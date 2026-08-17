@@ -98,6 +98,10 @@ export const generatePendingAISummaries = async (newsIds = [], processingDate = 
           keyFacts: fallback.keyFacts,
           whyThisMatters: fallback.whyThisMatters,
           whyItMatters: fallback.whyItMatters,
+          seoTitle: fallback.seoTitle,
+          metaDescription: fallback.metaDescription,
+          keywords: fallback.keywords,
+          sentiment: fallback.sentiment,
           aiResponse: fallback,
           publishStatus: "published",
         });

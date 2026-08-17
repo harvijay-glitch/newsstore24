@@ -78,6 +78,12 @@ function Article({ language = "en" }) {
     .filter((item, index, items) => items.indexOf(item) === index)
     .slice(0, 10)
     .join("\n");
+  const displayTags = (article.keywords || []).filter(Boolean).length
+    ? (article.keywords || []).filter(Boolean)
+    : [...new Set(`${article.title || ""} ${article.description || ""}`.toLowerCase().match(/[a-z][a-z-]{3,}/g) || [])]
+      .filter((tag) => !["about", "after", "before", "could", "their", "there", "which", "with", "from", "this", "that", "have", "news"].includes(tag))
+      .slice(0, 8);
+  const articleImage = article.generatedImageUrl || article.image;
 
   return (
     <>
@@ -91,6 +97,14 @@ function Article({ language = "en" }) {
         <p className="mt-6 text-sm font-bold uppercase tracking-[0.16em] text-red-600">{article.category || "News"} · Reported by {article.source || "Original source"}</p>
         <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl md:text-5xl">{displayTitle}</h1>
         {displayExcerpt && <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">{displayExcerpt}</p>}
+        {articleImage && <img src={articleImage} alt={displayTitle} className="mt-7 aspect-video w-full rounded-2xl object-cover shadow-sm" />}
+
+        <section className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <h2 className="text-sm font-black uppercase tracking-[0.16em] text-slate-700">SEO details</h2>
+          <p className="mt-3 text-sm font-semibold text-slate-900">{article.seoTitle || displayTitle}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">{article.metaDescription || displayExcerpt || "NewsStore24 article summary and latest context."}</p>
+          {displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2">{displayTags.map((tag) => <span key={tag} className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-slate-600 ring-1 ring-slate-200">{tag}</span>)}</div>}
+        </section>
 
         <div className="mt-6 grid gap-2 border-y border-slate-200 py-4 text-sm text-slate-600 sm:grid-cols-2 sm:gap-x-8">
           <p><span className="font-bold text-slate-900">By </span><Link to={`/author/${encodeURIComponent(author)}`} className="text-blue-600 hover:underline">{author}</Link></p>
