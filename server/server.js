@@ -65,7 +65,7 @@ cron.schedule("*/5 * * * *", () => {
 
 const PORT = process.env.PORT || 5000;
 
-const ensureAdminUser = async () => {
+const ensureAdminAccount = async () => {
   const email = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
   const password = String(process.env.ADMIN_PASSWORD || "");
   const name = String(process.env.ADMIN_NAME || "INKL Administrator").trim();
@@ -74,7 +74,6 @@ const ensureAdminUser = async () => {
     console.warn("ADMIN_EMAIL/ADMIN_PASSWORD are not set; skipping admin bootstrap.");
     return;
   }
-
   if (password.length < 12) {
     console.warn("ADMIN_PASSWORD must be at least 12 characters; skipping admin bootstrap.");
     return;
@@ -92,7 +91,7 @@ const ensureAdminUser = async () => {
 
 const startServer = async () => {
   await connectDB();
-  await ensureAdminUser();
+  await ensureAdminAccount();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server Running on Port ${PORT}`);
