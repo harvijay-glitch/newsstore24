@@ -41,7 +41,6 @@ function AIRecommendations() {
           <p className="text-sm font-bold uppercase tracking-wider text-violet-700">AI Recommendations</p>
           <h2 className="mt-1 text-4xl font-black">You May Also Like</h2>
         </div>
-        <span className="rounded-full bg-violet-100 px-4 py-2 text-sm font-bold text-violet-800">{articles.length} Articles</span>
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
