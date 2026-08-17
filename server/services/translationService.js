@@ -19,6 +19,14 @@ const translateWithGemini = async ({ text, target }) => {
   return String(response.text || "").trim();
 };
 
+const translateWithGoogleFallback = async ({ text, target, source }) => {
+  const response = await axios.get("https://translate.googleapis.com/translate_a/single", {
+    params: { client: "gtx", sl: source, tl: target, dt: "t", q: text.slice(0, 450) },
+    timeout: 15000,
+  });
+  return String(response.data?.[0]?.map((part) => part?.[0] || "").join("") || "").trim();
+};
+
 export const translateText = async ({ text, target, source = "en" }) => {
   if (!text?.trim() || source === target) return text;
 
@@ -28,12 +36,19 @@ export const translateText = async ({ text, target, source = "en" }) => {
       timeout: 15000,
     });
     const translation = String(response.data?.responseData?.translatedText || "").trim();
-    if (translation) return translation;
+    if (translation && translation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return translation;
   } catch (error) {
     console.warn("MyMemory translation unavailable:", error.message);
   }
 
+  try {
+    const googleTranslation = await translateWithGoogleFallback({ text, target, source });
+    if (googleTranslation && googleTranslation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return googleTranslation;
+  } catch (error) {
+    console.warn("Google translation fallback unavailable:", error.message);
+  }
+
   const fallbackTranslation = await translateWithGemini({ text, target });
-  if (fallbackTranslation) return fallbackTranslation;
+  if (fallbackTranslation && fallbackTranslation.toLowerCase() !== text.slice(0, 450).trim().toLowerCase()) return fallbackTranslation;
   throw new Error("No translation provider is available");
 };
