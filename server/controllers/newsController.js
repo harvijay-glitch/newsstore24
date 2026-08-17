@@ -205,7 +205,7 @@ export const getRelatedNews = async (req, res) => {
       category: current.category,
       publishStatus: "published",
       aiStatus: "completed",
-    }).sort({ publishedAt: -1 }).limit(4);
+    }).select("title seoTitle slug source category publishedAt image").sort({ publishedAt: -1 }).limit(4).lean();
     res.json({ success: true, articles });
   } catch (error) {
     res.status(500).json({ success: false, message: "Related news failed" });
@@ -218,7 +218,7 @@ export const getNewsArticle = async (req, res) => {
       $or: [{ _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null }, { slug: req.params.id }],
       publishStatus: "published",
       aiStatus: "completed",
-    });
+    }).lean();
     if (!article) return res.status(404).json({ success: false, message: "News not found" });
 
     // Reading an article must never fail because an older document cannot pass
