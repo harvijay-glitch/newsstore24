@@ -8,6 +8,7 @@ const sidebarItems = [
   { label: "Posts", path: "/admin/posts" },
   { label: "News", path: "/admin/news" },
   { label: "Media", path: "/admin/media" },
+  { label: "Pages", path: "/admin/pages" },
   { label: "Analytics", path: "/admin/analytics" },
   { label: "Settings", path: "/admin/settings" },
   { label: "Logout", path: null },

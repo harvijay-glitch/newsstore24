@@ -1,4 +1,6 @@
 import News from "../models/News.js";
+import MediaAsset from "../models/MediaAsset.js";
+import CmsPage from "../models/CmsPage.js";
 import mongoose from "mongoose";
 import { fetchAndSaveNews } from "../services/newsService.js";
 
@@ -750,4 +752,57 @@ export const getAnalytics = async (req, res) => {
     News.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
   ]);
   res.json({ success: true, totalNews, totalPosts, published, drafts, totalViews: totalViews[0]?.total || 0, categories });
+};
+
+export const uploadMedia = async (req, res) => {
+  try {
+    const { name, mimeType, dataUrl, size } = req.body || {};
+    if (!name || !mimeType || !String(mimeType).startsWith("image/") || !dataUrl || Number(size) > 2 * 1024 * 1024) {
+      return res.status(400).json({ success: false, message: "Upload a valid image up to 2 MB." });
+    }
+    const asset = await MediaAsset.create({ name: String(name), mimeType: String(mimeType), dataUrl: String(dataUrl), size: Number(size) || 0 });
+    res.status(201).json({ success: true, asset: { ...asset.toObject(), url: asset.dataUrl } });
+  } catch (error) {
+    console.error("Media upload failed:", error.message);
+    res.status(500).json({ success: false, message: "Media could not be uploaded." });
+  }
+};
+
+export const getMedia = async (req, res) => {
+  const assets = await MediaAsset.find().sort({ createdAt: -1 }).select("name mimeType size dataUrl createdAt").limit(100).lean();
+  res.json({ success: true, assets: assets.map((asset) => ({ ...asset, url: asset.dataUrl })) });
+};
+
+export const deleteMedia = async (req, res) => {
+  await MediaAsset.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+};
+
+const defaultPages = {
+  about: { title: "About NewsStore24", content: "NewsStore24 helps readers understand important stories quickly with attributed reporting and AI-assisted context." },
+  contact: { title: "Contact NewsStore24", content: "Contact the NewsStore24 team for corrections, feedback, and partnership enquiries." },
+  privacy: { title: "Privacy Policy", content: "NewsStore24 respects your privacy. We use information only to operate, secure, and improve this service." },
+  terms: { title: "Terms of Use", content: "Use NewsStore24 lawfully and verify important information against the original source." },
+};
+
+export const getCmsPage = async (req, res) => {
+  const slug = String(req.params.slug).toLowerCase();
+  const page = await CmsPage.findOne({ slug, status: "published" }).lean();
+  res.json({ success: true, page: page || { slug, ...(defaultPages[slug] || { title: slug, content: "" }), status: "published" } });
+};
+
+export const getAdminPages = async (req, res) => {
+  const pages = await CmsPage.find().sort({ slug: 1 }).lean();
+  res.json({ success: true, pages });
+};
+
+export const upsertAdminPage = async (req, res) => {
+  const slug = String(req.body.slug || "").trim().toLowerCase();
+  if (!slug || !req.body.title) return res.status(400).json({ success: false, message: "Slug and title are required." });
+  const page = await CmsPage.findOneAndUpdate(
+    { slug },
+    { $set: { title: String(req.body.title), content: String(req.body.content || ""), seoTitle: String(req.body.seoTitle || ""), metaDescription: String(req.body.metaDescription || ""), status: req.body.status === "draft" ? "draft" : "published" } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+  res.json({ success: true, page });
 };

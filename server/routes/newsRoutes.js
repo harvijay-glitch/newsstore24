@@ -22,6 +22,12 @@ import {
   updateAdminNews,
   deleteAdminNews,
   toggleFeaturedAdminNews,
+  uploadMedia,
+  getMedia,
+  deleteMedia,
+  getCmsPage,
+  getAdminPages,
+  upsertAdminPage,
 } from "../controllers/newsController.js";
 import { requireAdmin, requireAuth } from "../middleware/authMiddleware.js";
 
@@ -45,6 +51,11 @@ router.get("/admin/news/:id", requireAuth, requireAdmin, getAdminNewsById);
 router.put("/admin/news/:id", requireAuth, requireAdmin, updateAdminNews);
 router.delete("/admin/news/:id", requireAuth, requireAdmin, deleteAdminNews);
 router.patch("/admin/news/:id/featured", requireAuth, requireAdmin, toggleFeaturedAdminNews);
+router.get("/admin/media", requireAuth, requireAdmin, getMedia);
+router.post("/admin/media", requireAuth, requireAdmin, uploadMedia);
+router.delete("/admin/media/:id", requireAuth, requireAdmin, deleteMedia);
+router.get("/admin/pages", requireAuth, requireAdmin, getAdminPages);
+router.put("/admin/pages", requireAuth, requireAdmin, upsertAdminPage);
 
 // =========================
 // Latest News
@@ -65,6 +76,7 @@ router.get("/saved", getBookmarkedNews);
 router.get("/daily-brief", getDailyBrief);
 router.get("/recommendations", getRecommendations);
 router.get("/analytics", requireAuth, requireAdmin, getAnalytics);
+router.get("/pages/:slug", getCmsPage);
 router.get("/image/:fileId", getGeneratedNewsImage);
 router.get("/:id/related", getRelatedNews);
 router.get("/author/:name", getAuthorArticles);

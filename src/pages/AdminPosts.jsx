@@ -236,6 +236,26 @@ export function AdminPostFormPage() {
 
   const updateField = (field, value) => setFormData((current) => ({ ...current, [field]: value }));
 
+  const uploadFeaturedImage = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/") || file.size > 2 * 1024 * 1024) {
+      alert("Choose an image up to 2 MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = async () => {
+      try {
+        const response = await API.post("/news/admin/media", { name: file.name, mimeType: file.type, size: file.size, dataUrl: reader.result });
+        updateField("image", response.data.asset.url);
+      } catch (error) {
+        alert(error.response?.data?.message || "Image upload failed.");
+      }
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  };
+
   const handleSubmit = async (nextStatus) => {
     setSaving(true);
     try {
@@ -293,7 +313,8 @@ export function AdminPostFormPage() {
 
             <div>
               <label className="mb-1 block text-sm font-semibold text-slate-700">Featured Image URL</label>
-              <input value={formData.image} onChange={(event) => updateField("image", event.target.value)} placeholder="https://example.com/image.jpg" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none focus:border-red-400" />
+              <div className="flex gap-2"><input value={formData.image} onChange={(event) => updateField("image", event.target.value)} placeholder="https://example.com/image.jpg" className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none focus:border-red-400" /><label className="cursor-pointer rounded-xl bg-slate-900 px-3 py-2.5 text-sm font-semibold text-white">Upload<input type="file" accept="image/*" onChange={uploadFeaturedImage} className="hidden" /></label></div>
+              {formData.image && <img src={formData.image} alt="Featured preview" className="mt-3 aspect-video w-full rounded-xl object-cover" />}
             </div>
 
             <div>

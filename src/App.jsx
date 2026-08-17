@@ -16,14 +16,13 @@ import { AdminPostsListPage, AdminPostFormPage } from "./pages/AdminPosts";
 import { AdminNewsListPage, AdminNewsFormPage } from "./pages/AdminNews";
 import { AdminAnalyticsPage, AdminPlaceholderPage } from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
-import Contact from "./pages/Contact";
 import SavedNews from "./pages/SavedNews";
-import About from "./pages/About";
-import PrivacyPolicy from "./pages/PrivacyPolicy";
-import Terms from "./pages/Terms";
 import Article from "./pages/Article";
 import Author from "./pages/Author";
 import Search from "./pages/Search";
+import AdminMedia from "./pages/AdminMedia";
+import AdminPages from "./pages/AdminPages";
+import CmsPageView from "./pages/CmsPageView";
 
 function App() {
   const location = useLocation();
@@ -47,10 +46,10 @@ function App() {
         <Route path="/stock" element={<CategoryNews category="stock" title="Stock Market" />} />
         <Route path="/technology" element={<CategoryNews category="technology" title="Technology" />} />
         <Route path="/sports" element={<CategoryNews category="sports" title="Sports" />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<Terms />} />
+        <Route path="/contact" element={<CmsPageView />} />
+        <Route path="/about" element={<CmsPageView />} />
+        <Route path="/privacy" element={<CmsPageView />} />
+        <Route path="/terms" element={<CmsPageView />} />
         <Route path="/saved" element={<SavedNews />} />
         <Route path="/daily-brief" element={<DailyBrief />} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -60,7 +59,8 @@ function App() {
         <Route path="/admin/news" element={<AdminRoute><AdminNewsListPage /></AdminRoute>} />
         <Route path="/admin/news/new" element={<AdminRoute><AdminNewsFormPage /></AdminRoute>} />
         <Route path="/admin/news/edit/:id" element={<AdminRoute><AdminNewsFormPage /></AdminRoute>} />
-        <Route path="/admin/media" element={<AdminRoute><AdminPlaceholderPage title="Media" eyebrow="Media" description="Media library placeholder. Upload tools will be added later." /></AdminRoute>} />
+        <Route path="/admin/media" element={<AdminRoute><AdminMedia /></AdminRoute>} />
+        <Route path="/admin/pages" element={<AdminRoute><AdminPages /></AdminRoute>} />
         <Route path="/admin/analytics" element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><AdminPlaceholderPage title="Settings" eyebrow="Settings" description="Settings placeholder. Configuration and preferences will be added later." /></AdminRoute>} />
         <Route path="/admin/login" element={<AdminLogin />} />
