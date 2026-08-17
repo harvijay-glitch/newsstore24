@@ -137,7 +137,7 @@ function Article({ language = "en" }) {
         {articleImage && <img src={articleImage} alt={displayTitle} className="mt-7 aspect-video w-full rounded-2xl object-cover shadow-sm" />}
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-y border-slate-200 py-3">
-          <a href="https://news.google.com/search?q=NewsStore24" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-red-500 px-3 py-2 text-sm font-bold text-slate-900 hover:bg-red-50">Prefer us on <span className="text-blue-500">G</span></a>
+          <a href="https://www.google.com/preferences/source?q=https://www.newsstore24.com/" target="_blank" rel="noopener noreferrer" className="rounded-lg border border-red-500 px-3 py-2 text-sm font-bold text-slate-900 hover:bg-red-50">Prefer us on <span className="text-blue-500">G</span></a>
           <button type="button" onClick={toggleLike} aria-label="Like article" className={`rounded-lg px-3 py-2 text-lg ${liked ? "bg-blue-100 text-blue-700" : "border border-slate-200 text-slate-700"}`}>👍</button>
           <button type="button" onClick={() => document.getElementById("article-comments")?.scrollIntoView({ behavior: "smooth" })} aria-label="Comment on article" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-slate-700">▤</button>
           <a href={`https://wa.me/?text=${encodeURIComponent(`${displayTitle} ${window.location.href}`)}`} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" className="rounded-lg border border-slate-200 px-3 py-2 text-lg text-green-600">●</a>
