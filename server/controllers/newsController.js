@@ -191,7 +191,12 @@ export const getBookmarkedNews = async (req, res) => {
 
 export const getRelatedNews = async (req, res) => {
   try {
-    const current = await News.findById(req.params.id);
+    const current = await News.findOne({
+      $or: [
+        { _id: mongoose.isValidObjectId(req.params.id) ? req.params.id : null },
+        { slug: req.params.id },
+      ],
+    });
     if (!current) return res.status(404).json({ success: false, message: "News not found" });
     const articles = await News.find({
       _id: { $ne: current._id },
