@@ -14,7 +14,7 @@ import DailyBrief from "./pages/DailyBrief";
 import AdminDashboard from "./pages/AdminDashboard";
 import { AdminPostsListPage, AdminPostFormPage } from "./pages/AdminPosts";
 import { AdminNewsListPage, AdminNewsFormPage } from "./pages/AdminNews";
-import { AdminPlaceholderPage } from "./pages/AdminDashboard";
+import { AdminAnalyticsPage, AdminPlaceholderPage } from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
 import Contact from "./pages/Contact";
 import SavedNews from "./pages/SavedNews";
@@ -61,7 +61,7 @@ function App() {
         <Route path="/admin/news/new" element={<AdminRoute><AdminNewsFormPage /></AdminRoute>} />
         <Route path="/admin/news/edit/:id" element={<AdminRoute><AdminNewsFormPage /></AdminRoute>} />
         <Route path="/admin/media" element={<AdminRoute><AdminPlaceholderPage title="Media" eyebrow="Media" description="Media library placeholder. Upload tools will be added later." /></AdminRoute>} />
-        <Route path="/admin/analytics" element={<AdminRoute><AdminPlaceholderPage title="Analytics" eyebrow="Analytics" description="Analytics dashboard placeholder. Reporting tools will be added later." /></AdminRoute>} />
+        <Route path="/admin/analytics" element={<AdminRoute><AdminAnalyticsPage /></AdminRoute>} />
         <Route path="/admin/settings" element={<AdminRoute><AdminPlaceholderPage title="Settings" eyebrow="Settings" description="Settings placeholder. Configuration and preferences will be added later." /></AdminRoute>} />
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/article/:id" element={<Article language={language} />} />

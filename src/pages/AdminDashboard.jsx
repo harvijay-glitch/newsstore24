@@ -213,5 +213,41 @@ export function AdminPlaceholderPage({ title, eyebrow = "Overview", description 
   );
 }
 
+export function AdminAnalyticsPage() {
+  const [analytics, setAnalytics] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    API.get("/news/analytics")
+      .then((response) => setAnalytics(response.data))
+      .catch(() => setError("Analytics data could not be loaded."));
+  }, []);
+
+  const totalContent = (analytics?.totalNews || 0) + (analytics?.totalPosts || 0);
+  const cards = [
+    ["Total content", totalContent],
+    ["Published", analytics?.published ?? "—"],
+    ["Drafts", analytics?.drafts ?? "—"],
+    ["Total views", analytics ? Number(analytics.totalViews || 0).toLocaleString("en-IN") : "—"],
+  ];
+
+  return (
+    <AdminLayout pageEyebrow="Analytics" pageTitle="Analytics">
+      {error && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {cards.map(([label, value]) => <div key={label} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><p className="text-sm text-slate-500">{label}</p><p className="mt-3 text-3xl font-black text-slate-950">{value}</p></div>)}
+      </section>
+      <section className="mt-6 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+        <p className="text-[10px] font-bold uppercase tracking-[0.28em] text-slate-500">Distribution</p>
+        <h2 className="mt-2 text-xl font-black text-slate-950">Content by category</h2>
+        <div className="mt-5 space-y-3">
+          {(analytics?.categories || []).map((item) => <div key={item._id || "uncategorized"} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"><span className="font-semibold text-slate-800">{item._id || "Uncategorized"}</span><span className="font-bold text-slate-600">{item.count}</span></div>)}
+          {!analytics?.categories?.length && <p className="text-sm text-slate-500">No category data available yet.</p>}
+        </div>
+      </section>
+    </AdminLayout>
+  );
+}
+
 export { AdminLayout };
 export default AdminDashboard;
