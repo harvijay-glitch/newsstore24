@@ -639,7 +639,7 @@ export const createAdminPost = async (req, res) => {
       author: String(author || "Admin").trim(),
       publishStatus: status === "published" ? "published" : "draft",
       publishedAt: status === "published" ? new Date(publishedAt || Date.now()) : null,
-      url: `https://inkl.news/${finalSlug}`,
+      url: `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${finalSlug}`,
       source: "Admin CMS",
       originalTitle: String(title).trim(),
       aiStatus: "completed",
@@ -705,7 +705,7 @@ export const updateAdminPost = async (req, res) => {
     post.author = String(author || post.author || "Admin").trim();
     post.publishStatus = status === "published" ? "published" : "draft";
     post.publishedAt = status === "published" ? new Date(publishedAt || post.publishedAt || Date.now()) : null;
-    post.url = post.url || `https://inkl.news/${finalSlug}`;
+    post.url = `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${post.slug}`;
     post.aiSummary = post.aiSummary || String(description || "");
 
     await post.save();
@@ -741,10 +741,13 @@ export const deleteAdminPost = async (req, res) => {
 };
 
 export const getAnalytics = async (req, res) => {
-  const [totalNews, totalViews, categories] = await Promise.all([
-    News.countDocuments(),
+  const [totalNews, totalPosts, published, drafts, totalViews, categories] = await Promise.all([
+    News.countDocuments({ source: { $ne: "Admin CMS" } }),
+    News.countDocuments({ source: "Admin CMS" }),
+    News.countDocuments({ publishStatus: "published" }),
+    News.countDocuments({ publishStatus: "draft" }),
     News.aggregate([{ $group: { _id: null, total: { $sum: "$views" } } }]),
     News.aggregate([{ $group: { _id: "$category", count: { $sum: 1 } } }, { $sort: { count: -1 } }]),
   ]);
-  res.json({ success: true, totalNews, totalViews: totalViews[0]?.total || 0, categories });
+  res.json({ success: true, totalNews, totalPosts, published, drafts, totalViews: totalViews[0]?.total || 0, categories });
 };

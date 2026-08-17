@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { logoutAdmin } from "../services/authService";
+import API from "../services/api";
 
 const sidebarItems = [
   { label: "Dashboard", path: "/admin" },
@@ -10,27 +11,6 @@ const sidebarItems = [
   { label: "Analytics", path: "/admin/analytics" },
   { label: "Settings", path: "/admin/settings" },
   { label: "Logout", path: null },
-];
-
-const stats = [
-  { label: "Total News", value: "1,284", accent: "bg-slate-950 text-white" },
-  { label: "Total Blogs", value: "368", accent: "bg-red-600 text-white" },
-  { label: "Published", value: "1,092", accent: "bg-amber-500 text-slate-900" },
-  { label: "Drafts", value: "146", accent: "bg-emerald-500 text-slate-950" },
-  { label: "Views", value: "89.4K", accent: "bg-violet-500 text-white" },
-  { label: "Bookmarks", value: "12.8K", accent: "bg-sky-500 text-white" },
-];
-
-const latestPosts = [
-  { title: "Market sentiment remains mixed as global investors rebalance risk", status: "Published", date: "2 hours ago" },
-  { title: "Startup founders are rethinking AI hiring after a brutal quarter", status: "Draft", date: "Today" },
-  { title: "Urban transit upgrades push clean mobility to the top of municipal agendas", status: "Scheduled", date: "Yesterday" },
-];
-
-const performance = [
-  { label: "Engagement", value: "67%", change: "+8.4%" },
-  { label: "Avg. session", value: "4m 32s", change: "+1.2m" },
-  { label: "CTR", value: "24.8%", change: "+3.1%" },
 ];
 
 function AdminLayout({ pageEyebrow, pageTitle, children }) {
@@ -141,8 +121,27 @@ function AdminLayout({ pageEyebrow, pageTitle, children }) {
 }
 
 function DashboardCards() {
+  const [analytics, setAnalytics] = useState(null);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    API.get("/news/analytics")
+      .then((response) => setAnalytics(response.data))
+      .catch(() => setError("Dashboard metrics could not be loaded."));
+  }, []);
+
+  const stats = [
+    { label: "Total News", value: analytics?.totalNews ?? "—", accent: "bg-slate-950 text-white" },
+    { label: "Total Blogs", value: analytics?.totalPosts ?? "—", accent: "bg-red-600 text-white" },
+    { label: "Published", value: analytics?.published ?? "—", accent: "bg-amber-500 text-slate-900" },
+    { label: "Drafts", value: analytics?.drafts ?? "—", accent: "bg-emerald-500 text-slate-950" },
+    { label: "Views", value: analytics ? Number(analytics.totalViews || 0).toLocaleString("en-IN") : "—", accent: "bg-violet-500 text-white" },
+  ];
+  const categoryStats = (analytics?.categories || []).slice(0, 3);
+
   return (
     <>
+      {error && <p className="mb-4 rounded-xl bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {stats.map((stat) => (
           <div key={stat.label} className={`${stat.accent} rounded-2xl p-5 shadow-sm ring-1 ring-black/5`}>
@@ -166,17 +165,12 @@ function DashboardCards() {
           </div>
 
           <div className="mt-6 space-y-4">
-            {latestPosts.map((post) => (
-              <div key={post.title} className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{post.title}</p>
-                  <p className="mt-1 text-xs text-slate-500">{post.date}</p>
-                </div>
-                <span className={`inline-flex w-fit rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${post.status === "Published" ? "bg-emerald-100 text-emerald-700" : post.status === "Draft" ? "bg-amber-100 text-amber-700" : "bg-sky-100 text-sky-700"}`}>
-                  {post.status}
-                </span>
+            {categoryStats.length ? categoryStats.map((item) => (
+              <div key={item._id || "uncategorized"} className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <span className="text-sm font-semibold text-slate-900">{item._id || "Uncategorized"}</span>
+                <span className="text-sm font-bold text-slate-600">{item.count} items</span>
               </div>
-            ))}
+            )) : <p className="rounded-2xl bg-slate-50 p-4 text-sm text-slate-500">No category data available yet.</p>}
           </div>
         </div>
 
@@ -187,15 +181,8 @@ function DashboardCards() {
           </div>
 
           <div className="mt-6 space-y-4">
-            {performance.map((metric) => (
-              <div key={metric.label} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm font-medium text-slate-600">{metric.label}</span>
-                  <span className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">{metric.change}</span>
-                </div>
-                <p className="mt-3 text-2xl font-black text-slate-950">{metric.value}</p>
-              </div>
-            ))}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-medium text-slate-600">Published rate</span><p className="mt-3 text-2xl font-black text-slate-950">{analytics ? `${analytics.totalNews + analytics.totalPosts ? Math.round((analytics.published / (analytics.totalNews + analytics.totalPosts)) * 100) : 0}%` : "—"}</p></div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4"><span className="text-sm font-medium text-slate-600">Total content</span><p className="mt-3 text-2xl font-black text-slate-950">{analytics ? (analytics.totalNews || 0) + (analytics.totalPosts || 0) : "—"}</p></div>
           </div>
         </div>
       </section>

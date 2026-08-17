@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import API from "../services/api";
 import { AdminLayout } from "./AdminDashboard";
@@ -11,6 +11,33 @@ function formatDate(dateString) {
   const date = new Date(dateString);
   if (Number.isNaN(date.getTime())) return "—";
   return date.toLocaleDateString("en-IN", { year: "numeric", month: "short", day: "numeric" });
+}
+
+function RichTextEditor({ value, onChange }) {
+  const editorRef = useRef(null);
+
+  useEffect(() => {
+    if (editorRef.current && editorRef.current.innerHTML !== value) editorRef.current.innerHTML = value || "";
+  }, [value]);
+
+  const format = (command, commandValue) => {
+    editorRef.current?.focus();
+    document.execCommand(command, false, commandValue);
+    onChange(editorRef.current?.innerHTML || "");
+  };
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 focus-within:border-red-400">
+      <div className="flex flex-wrap gap-2 border-b border-slate-200 bg-white p-2">
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("bold")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-bold text-slate-700 hover:bg-slate-100">B</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("italic")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm italic text-slate-700 hover:bg-slate-100">I</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("insertUnorderedList")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">List</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("formatBlock", "h2")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Heading</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { const url = window.prompt("Link URL"); if (url) format("createLink", url); }} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Link</button>
+      </div>
+      <div ref={editorRef} contentEditable role="textbox" aria-label="Post content" onInput={(event) => onChange(event.currentTarget.innerHTML)} className="min-h-72 p-4 text-slate-900 outline-none" />
+    </div>
+  );
 }
 
 export function AdminPostsListPage() {
@@ -271,7 +298,7 @@ export function AdminPostFormPage() {
 
             <div>
               <label className="mb-1 block text-sm font-semibold text-slate-700">Content</label>
-              <textarea value={formData.content} onChange={(event) => updateField("content", event.target.value)} rows="14" className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-slate-900 outline-none focus:border-red-400" />
+              <RichTextEditor value={formData.content} onChange={(value) => updateField("content", value)} />
             </div>
           </div>
 
