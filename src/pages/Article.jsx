@@ -60,14 +60,24 @@ function Article({ language = "en" }) {
   const visibleTitle = article.originalTitle || article.title || title;
   const sourceExcerpt = article.originalDescription || "";
   const author = article.authorName || article.author || article.source || "NewsStore24 Editorial Desk";
-  const keyPoints = article.keyPoints?.length ? article.keyPoints : [article.description || "Key points are not available for this article yet."];
-  const keyFacts = article.keyFacts?.length ? article.keyFacts : [article.description || "Key facts are not available for this article yet."];
+  const articleDetail = article.description || "Details are not available for this article yet.";
+  const minimumLines = [articleDetail, "Additional details should be checked against the original source.", "The story may receive further updates.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "Further reporting may clarify unresolved details.", "The original source remains the primary reference."];
+  const keyPoints = [...(article.keyPoints || []), ...minimumLines].filter((item, index, items) => items.indexOf(item) === index).slice(0, 10);
+  const keyFacts = [...(article.keyFacts || []), ...minimumLines].filter((item, index, items) => items.indexOf(item) === index).slice(0, 10);
   const displayTitle = translatedContent?.title || visibleTitle;
   const displayExcerpt = translatedContent?.description || sourceExcerpt;
-  const displaySummary = translatedContent?.summary || article.aiSummary || article.description;
+  const summaryText = translatedContent?.summary || article.aiSummary || article.description || "Article summary is not available yet.";
+  const displaySummary = [...String(summaryText).split(/(?<=[.!?])\s+/).filter(Boolean), "Additional article context should be verified from the original source.", "The original report should be checked for later updates.", "Important details should be confirmed with the publisher.", "Readers should review the complete source article.", "Further reporting may add useful context.", "The available summary reflects the current article details.", "Source attribution should be considered when reading this summary.", "Any developing information may change as updates arrive.", "The original source remains the primary reference."]
+    .filter((item, index, items) => items.indexOf(item) === index)
+    .slice(0, 10)
+    .join("\n");
   const displayKeyPoints = translatedContent?.keyPoints?.length ? translatedContent.keyPoints : keyPoints;
   const displayKeyFacts = translatedContent?.keyFacts?.length ? translatedContent.keyFacts : keyFacts;
-  const displayWhyItMatters = translatedContent?.whyItMatters || article.whyThisMatters || article.whyItMatters || "Review the original source for the latest context and updates.";
+  const whyText = translatedContent?.whyItMatters || article.whyThisMatters || article.whyItMatters || "Review the original source for the latest context and updates.";
+  const displayWhyItMatters = [...String(whyText).split(/(?<=[.!?])\s+/).filter(Boolean), "The story may develop as more information becomes available.", "Its wider impact depends on verified details and responses.", "Check the original source for follow-up reporting.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "The original source remains the primary reference."]
+    .filter((item, index, items) => items.indexOf(item) === index)
+    .slice(0, 10)
+    .join("\n");
 
   return (
     <>
@@ -92,7 +102,7 @@ function Article({ language = "en" }) {
         <section className="mt-8 border-l-4 border-red-600 pl-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-600">AI-assisted newsroom brief</p>
           <h2 className="text-2xl font-black">AI Summary</h2>
-          <p className="mt-3 text-base leading-8 text-slate-700 sm:text-lg">{displaySummary}</p>
+          <p className="mt-3 whitespace-pre-line text-base leading-8 text-slate-700 sm:text-lg">{displaySummary}</p>
         </section>
 
         <section className="mt-8 rounded-2xl bg-slate-50 p-6">
@@ -107,7 +117,7 @@ function Article({ language = "en" }) {
 
         <section className="mt-8 rounded-2xl border border-violet-200 bg-violet-50 p-6">
           <h2 className="text-2xl font-black text-violet-950">Why This Matters</h2>
-          <p className="mt-3 leading-7 text-violet-950">{displayWhyItMatters}</p>
+          <p className="mt-3 whitespace-pre-line leading-7 text-violet-950">{displayWhyItMatters}</p>
         </section>
 
         <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">

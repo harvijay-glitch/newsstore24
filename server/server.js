@@ -2,12 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cron from "node-cron";
+import bcrypt from "bcryptjs";
 
 import connectDB from "./config/db.js";
 import newsRoutes from "./routes/newsRoutes.js";
 import aiRoutes from "./routes/aiRoutes.js";
 import translationRoutes from "./routes/translationRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
+import User from "./models/User.js";
 import { refreshAllNews } from "./services/newsService.js";
 
 dotenv.config();
@@ -63,8 +65,34 @@ cron.schedule("*/5 * * * *", () => {
 
 const PORT = process.env.PORT || 5000;
 
+const ensureAdminUser = async () => {
+  const email = String(process.env.ADMIN_EMAIL || "").trim().toLowerCase();
+  const password = String(process.env.ADMIN_PASSWORD || "");
+  const name = String(process.env.ADMIN_NAME || "INKL Administrator").trim();
+
+  if (!email || !password) {
+    console.warn("ADMIN_EMAIL/ADMIN_PASSWORD are not set; skipping admin bootstrap.");
+    return;
+  }
+
+  if (password.length < 12) {
+    console.warn("ADMIN_PASSWORD must be at least 12 characters; skipping admin bootstrap.");
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const user = await User.findOneAndUpdate(
+    { email },
+    { $set: { name, passwordHash, role: "admin" } },
+    { upsert: true, new: true, setDefaultsOnInsert: true }
+  );
+
+  console.log(`Admin account is ready for ${user.email}.`);
+};
+
 const startServer = async () => {
   await connectDB();
+  await ensureAdminUser();
 
   app.listen(PORT, () => {
     console.log(`🚀 Server Running on Port ${PORT}`);

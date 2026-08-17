@@ -1,4 +1,4 @@
-import { answerNewsQuestion, createArticleEnrichmentFallback, generateArticleEnrichment } from "../services/openRouterService.js";
+import { answerNewsQuestion, createArticleEnrichmentFallback, ensureMinimumList, ensureMinimumSummary, ensureMinimumWhy, generateArticleEnrichment } from "../services/openRouterService.js";
 import News from "../models/News.js";
 
 const getArticleInputFromText = (text = "") => ({
@@ -60,12 +60,12 @@ export const getNewsSummary = async (req, res) => {
     if (news.aiSummary && news.aiStatus === "completed") {
       const cachedEnrichment = {
         ...createArticleEnrichmentFallback(news),
-        aiSummary: news.aiSummary,
-        summary: news.aiSummary,
-        keyPoints: news.keyPoints?.length ? news.keyPoints : createArticleEnrichmentFallback(news).keyPoints,
-        keyFacts: news.keyFacts?.length ? news.keyFacts : createArticleEnrichmentFallback(news).keyFacts,
-        whyThisMatters: news.whyThisMatters || news.whyItMatters || createArticleEnrichmentFallback(news).whyThisMatters,
-        whyItMatters: news.whyItMatters || news.whyThisMatters || createArticleEnrichmentFallback(news).whyItMatters,
+        aiSummary: ensureMinimumSummary(news.aiSummary, createArticleEnrichmentFallback(news).aiSummary),
+        summary: ensureMinimumSummary(news.aiSummary, createArticleEnrichmentFallback(news).aiSummary),
+        keyPoints: ensureMinimumList(news.keyPoints, createArticleEnrichmentFallback(news).keyPoints),
+        keyFacts: ensureMinimumList(news.keyFacts, createArticleEnrichmentFallback(news).keyFacts),
+        whyThisMatters: ensureMinimumWhy(news.whyThisMatters || news.whyItMatters, createArticleEnrichmentFallback(news).whyThisMatters),
+        whyItMatters: ensureMinimumWhy(news.whyItMatters || news.whyThisMatters, createArticleEnrichmentFallback(news).whyItMatters),
       };
       return res.json(toSummaryResponse(cachedEnrichment, true));
     }

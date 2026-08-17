@@ -72,7 +72,9 @@ function SEO({ article }) {
     setMeta('meta[name="robots"]', 'name="robots"', metadata.noIndex ? "noindex, nofollow" : "index, follow");
 
     const verificationToken = import.meta.env.VITE_GOOGLE_SITE_VERIFICATION?.trim();
-    if (verificationToken) setMeta('meta[name="google-site-verification"]', 'name="google-site-verification"', verificationToken);
+    if (verificationToken && !verificationToken.startsWith("your_")) {
+      setMeta('meta[name="google-site-verification"]', 'name="google-site-verification"', verificationToken);
+    }
 
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) {

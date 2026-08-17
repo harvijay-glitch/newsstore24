@@ -8,6 +8,30 @@ const normalizeList = (value, maxItems) => (Array.isArray(value)
   ? value.map((item) => normalizeText(item, 300)).filter(Boolean).slice(0, maxItems)
   : []);
 
+export const ensureMinimumList = (value, fallback = [], minimum = 10, maximum = 10) => {
+  const result = [...normalizeList(value, maximum), ...normalizeList(fallback, maximum)]
+    .filter((item, index, items) => items.indexOf(item) === index)
+    .slice(0, maximum);
+  while (result.length < minimum) result.push(`Additional context should be confirmed from the original source (${result.length + 1}).`);
+  return result;
+};
+
+export const ensureMinimumWhy = (value, fallback = "") => {
+  const lines = normalizeText(value, 1000).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const fallbackLines = normalizeText(fallback, 1000).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const result = [...lines, ...fallbackLines].filter((line, index, items) => items.indexOf(line) === index);
+  while (result.length < 10) result.push(`Review the original source for the latest context and updates (${result.length + 1}).`);
+  return result.slice(0, 10).join("\n");
+};
+
+export const ensureMinimumSummary = (value, fallback = "") => {
+  const lines = normalizeText(value, 1800).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const fallbackLines = normalizeText(fallback, 1800).split(/(?<=[.!?])\s+/).filter(Boolean);
+  const result = [...lines, ...fallbackLines].filter((line, index, items) => items.indexOf(line) === index);
+  while (result.length < 10) result.push(`Additional article context should be verified from the original source (${result.length + 1}).`);
+  return result.slice(0, 10).join("\n");
+};
+
 export const createArticleEnrichmentFallback = ({ title = "", description = "", content = "" } = {}) => {
   const sourceDetail = normalizeText(description || content, 500) || "The original report contains limited published details.";
   const articleTitle = normalizeText(title, 110) || "This news story";
@@ -19,10 +43,17 @@ export const createArticleEnrichmentFallback = ({ title = "", description = "", 
       `The report concerns ${articleTitle}.`,
       `The available source description says: ${sourceDetail}`,
       "Additional details should be confirmed from the original source.",
+      "The original source should be checked for later developments.",
+      "The report should be read in its full published context.",
+      "Important claims should be verified with the original publisher.",
+      "Further reporting may add context to this developing story.",
+      "Readers should distinguish confirmed information from later updates.",
+      "The source remains the best place for follow-up details.",
+      "This context is based on the available article information.",
     ],
-    keyFacts: [sourceDetail, `The source article is titled: ${articleTitle}.`],
-    whyThisMatters: "Readers should review the original source for complete context and later updates.",
-    whyItMatters: "Readers should review the original source for complete context and later updates.",
+    keyFacts: [sourceDetail, `The source article is titled: ${articleTitle}.`, "The available information comes from the attributed report.", "Further facts should be verified against the original source.", "The article contains the source description used for this brief.", "The report may be updated by its publisher.", "The available facts are limited to the supplied article.", "Readers should verify names, dates, and figures in the source.", "The original report provides the attribution for this information.", "Additional reporting may clarify unresolved details."],
+    whyThisMatters: "Readers should review the original source for complete context and later updates. The story may develop as more information becomes available. Its wider impact depends on verified details and responses. Check the source again for follow-up reporting. The report should be read in its full published context. Important claims should be verified with the original publisher. Further reporting may add context to this developing story. Readers should distinguish confirmed information from later updates. The source remains the best place for follow-up details. This explanation is based on the available article information.",
+    whyItMatters: "Readers should review the original source for complete context and later updates. The story may develop as more information becomes available. Its wider impact depends on verified details and responses. Check the source again for follow-up reporting. The report should be read in its full published context. Important claims should be verified with the original publisher. Further reporting may add context to this developing story. Readers should distinguish confirmed information from later updates. The source remains the best place for follow-up details. This explanation is based on the available article information.",
     sentiment: "neutral",
     keywords: [],
     seoTitle: articleTitle,
@@ -63,7 +94,7 @@ export const generateArticleEnrichment = async ({ title = "", description = "", 
         role: "user",
         content: `Return one strict valid JSON object only; do not use Markdown or code fences. Create original, factual AI-assisted news content from the attributed source. Use genuinely fresh wording: do not copy a sentence, paragraph, or any sequence of eight source words. Do not add facts, guesses, opinions, or keyword stuffing.
 
-      Required JSON: {"rewrittenTitle":"max 110 chars","summary":"80-120 words","keyPoints":["4-6 factual takeaways"],"keyFacts":["3-6 concrete source-supported facts"],"whyThisMatters":"one or two sentences on impact/background/what to watch","sentiment":"positive|neutral|negative|mixed","keywords":["5-10 natural keyword phrases"],"seoTitle":"original max 110 chars","metaDescription":"original factual max 160 chars"}. If the source cannot support every field, return {}.
+      Required JSON: {"rewrittenTitle":"max 110 chars","summary":"10 clear factual sentences, one per line","keyPoints":["10 factual takeaways"],"keyFacts":["10 concrete source-supported facts"],"whyThisMatters":"10 clear sentences, one per line, on impact/background/what to watch","sentiment":"positive|neutral|negative|mixed","keywords":["5-10 natural keyword phrases"],"seoTitle":"original max 110 chars","metaDescription":"original factual max 160 chars"}. Return exactly 10 lines in summary, 10 items in keyPoints, and 10 items in keyFacts.
 
 Source title: ${title}
 Source description: ${description}
@@ -82,16 +113,16 @@ Source content: ${content}`,
     const raw = response.data.choices?.[0]?.message?.content || "";
     const parsed = parseJsonObject(raw) || {};
     const fallback = createArticleEnrichmentFallback({ title, description, content });
-    const aiSummary = normalizeText(parsed.summary || parsed.aiSummary, 1500) || fallback.aiSummary;
+    const aiSummary = ensureMinimumSummary(parsed.summary || parsed.aiSummary, fallback.aiSummary);
     const whyThisMatters = normalizeText(parsed.whyThisMatters || parsed.whyItMatters, 320) || fallback.whyThisMatters;
     return {
       rewrittenTitle: normalizeText(parsed.rewrittenTitle, 110) || fallback.rewrittenTitle,
       aiSummary,
       summary: aiSummary,
-      keyPoints: normalizeList(parsed.keyPoints, 6).length ? normalizeList(parsed.keyPoints, 6) : fallback.keyPoints,
-      keyFacts: normalizeList(parsed.keyFacts, 6).length ? normalizeList(parsed.keyFacts, 6) : fallback.keyFacts,
-      whyThisMatters,
-      whyItMatters: whyThisMatters,
+      keyPoints: ensureMinimumList(parsed.keyPoints, fallback.keyPoints),
+      keyFacts: ensureMinimumList(parsed.keyFacts, fallback.keyFacts),
+      whyThisMatters: ensureMinimumWhy(whyThisMatters, fallback.whyThisMatters),
+      whyItMatters: ensureMinimumWhy(whyThisMatters, fallback.whyThisMatters),
       sentiment: String(parsed.sentiment || "").toLowerCase(),
       keywords: normalizeList(parsed.keywords, 10),
       seoTitle: normalizeText(parsed.seoTitle, 110) || fallback.seoTitle,

@@ -52,8 +52,10 @@ function LatestNews({ news, loading, filterLabel }) {
 
     try {
       // Existing background summaries appear instantly; new ones are cached by the server.
+      const fallbackLines = [item.description || "Additional context is not available yet.", "Check the original source for further details.", "The story may receive later updates.", "Verify important facts against the source report.", "The report provides available context for readers.", "Important claims should be verified with the source.", "The publisher may add follow-up information.", "The article reflects the details currently available.", "Readers should check names, dates, and figures.", "The original source remains the primary reference."];
+      const summaryLines = [item.aiSummary || "Summary is not available yet.", "Additional article context should be verified from the original source.", "The original report should be checked for later updates.", "Important details should be confirmed with the publisher.", "Readers should review the complete source article.", "Further reporting may add useful context.", "The available summary reflects the current article details.", "Source attribution should be considered when reading this summary.", "Any developing information may change as updates arrive.", "The original source remains the primary reference."];
       const result = item.aiSummary
-        ? { summary: item.aiSummary, keyPoints: item.keyPoints || [], keyFacts: item.keyFacts || [], whyThisMatters: item.whyThisMatters || item.whyItMatters || "" }
+        ? { summary: summaryLines.slice(0, 10).join("\n"), keyPoints: [...(item.keyPoints || []), ...fallbackLines].slice(0, 10), keyFacts: [...(item.keyFacts || []), ...fallbackLines].slice(0, 10), whyThisMatters: item.whyThisMatters || item.whyItMatters || fallbackLines.join("\n") }
         : (id && await getNewsAIEnrichment(id));
       setSummary(result || { summary: "Summary is not available for this article.", keyPoints: [], keyFacts: [], whyThisMatters: "" });
     } catch (error) {
@@ -108,7 +110,7 @@ function LatestNews({ news, loading, filterLabel }) {
                 <div><h3 className="font-bold">AI Summary</h3><p className="mt-1 whitespace-pre-wrap">{summary.summary}</p></div>
                 <div><h3 className="font-bold">Key Points</h3><ul className="mt-1 list-disc pl-5">{(summary.keyPoints || []).map((point) => <li key={point}>{point}</li>)}</ul></div>
                 <div><h3 className="font-bold">Key Facts</h3><ul className="mt-1 list-disc pl-5">{(summary.keyFacts || []).map((fact) => <li key={fact}>{fact}</li>)}</ul></div>
-                <div><h3 className="font-bold">Why This Matters</h3><p className="mt-1">{summary.whyThisMatters || summary.whyItMatters}</p></div>
+                <div><h3 className="font-bold">Why This Matters</h3><p className="mt-1 whitespace-pre-line">{summary.whyThisMatters || summary.whyItMatters}</p></div>
               </div>
             )}
             <button onClick={closeSummary} className="mt-6 bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700">Close</button>

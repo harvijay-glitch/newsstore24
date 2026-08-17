@@ -5,7 +5,7 @@ function Contact() {
       <h1 className="mt-3 text-4xl font-black">Contact NewsStore24</h1>
       <div className="mt-8 space-y-5 text-lg leading-8 text-slate-600">
         <p>For corrections, source concerns, editorial feedback, or partnership enquiries, contact the NewsStore24 editorial team.</p>
-        <p><a className="font-bold text-blue-600 hover:underline" href="mailto:editor@ainews.local">editor@ainews.local</a></p>
+        <p><a className="font-bold text-blue-600 hover:underline" href="mailto:contact@newsstore24.com">contact@newsstore24.com</a></p>
         <p>We review correction requests against the linked original source and update stories when verified information changes.</p>
       </div>
     </main>
