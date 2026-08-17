@@ -1,76 +1,52 @@
 import axios from "axios";
 
-export const normalizeFiveBulletPoints = (summary = "") => {
-  const points = summary
-    .split("\n")
-    .map((line) => line.trim().replace(/^(?:[-*•]|\d+[.)])\s+/, ""))
-    .filter(Boolean);
-
-  return points.length === 5 ? points.map((point) => `- ${point}`).join("\n") : null;
-};
-
-export const createFallbackSummary = (text = "") => {
-  const title = text.match(/Title:\s*([^\n]+?)(?=\s*Description:|$)/i)?.[1]?.trim() || "this news story";
-  const description = text.match(/Description:\s*([^\n]+?)(?=\s*Content:|$)/i)?.[1]?.trim()
-    || text.replace(/\s+/g, " ").trim();
-  const detail = description.length > 180 ? `${description.slice(0, 177)}...` : description;
-
-  return [
-    `- This story focuses on ${title}.`,
-    `- Available report details: ${detail || "The article details are limited."}`,
-    "- The full AI service is temporarily unavailable, so this is a basic article summary.",
-    "- Review the original article for complete context, sources, and any later updates.",
-    "- Detailed AI summaries will become available again when the AI provider is restored.",
-  ].join("\n");
-};
-
 const appUrl = process.env.APP_URL || "https://newsstore24.com";
 
-export const generateSummary = async (text) => {
-  const requestSummary = async () => {
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: process.env.OPENROUTER_MODEL || "meta-llama/llama-3.3-70b-instruct:free",
-        max_tokens: 220,
-        temperature: 0,
-        messages: [
-          {
-            role: "user",
-            content: `Write exactly five factual news-summary bullet points. Each line must start with "- ". Keep every point short (12 to 20 words). Cover what happened, who is involved, key facts, impact, and what happens next. Return only five lines; no title, introduction, or conclusion.
+const normalizeText = (value, maxLength = 1000) => String(value || "").replace(/\s+/g, " ").trim().slice(0, maxLength);
 
-${text}`,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": appUrl,
-          "X-Title": "NewsStore24",
-        },
-        timeout: 12000,
-      }
-    );
+const normalizeList = (value, maxItems) => (Array.isArray(value)
+  ? value.map((item) => normalizeText(item, 300)).filter(Boolean).slice(0, maxItems)
+  : []);
 
-    return response.data.choices?.[0]?.message?.content || "";
+export const createArticleEnrichmentFallback = ({ title = "", description = "", content = "" } = {}) => {
+  const sourceDetail = normalizeText(description || content, 500) || "The original report contains limited published details.";
+  const articleTitle = normalizeText(title, 110) || "This news story";
+  return {
+    rewrittenTitle: articleTitle,
+    aiSummary: sourceDetail,
+    summary: sourceDetail,
+    keyPoints: [
+      `The report concerns ${articleTitle}.`,
+      `The available source description says: ${sourceDetail}`,
+      "Additional details should be confirmed from the original source.",
+    ],
+    keyFacts: [sourceDetail, `The source article is titled: ${articleTitle}.`],
+    whyThisMatters: "Readers should review the original source for complete context and later updates.",
+    whyItMatters: "Readers should review the original source for complete context and later updates.",
+    sentiment: "neutral",
+    keywords: [],
+    seoTitle: articleTitle,
+    metaDescription: sourceDetail.slice(0, 160),
   };
+};
 
-  // Do not cache an incomplete response. One retry handles occasional
-  // provider formatting misses without leaving the UI waiting indefinitely.
-  for (let attempt = 0; attempt < 2; attempt += 1) {
+const parseJsonObject = (raw) => {
+  const text = String(raw || "").replace(/[“”]/g, '"').replace(/[‘’]/g, "'").trim();
+  const withoutFence = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/i, "").trim();
+  const start = withoutFence.indexOf("{");
+  const end = withoutFence.lastIndexOf("}");
+  if (start < 0 || end <= start) return null;
+
+  const candidate = withoutFence.slice(start, end + 1);
+  for (const value of [candidate, candidate.replace(/,\s*([}\]])/g, "$1")]) {
     try {
-      const summary = await requestSummary();
-      const normalizedSummary = normalizeFiveBulletPoints(summary);
-      if (normalizedSummary) return normalizedSummary;
-    } catch (error) {
-      console.log("OPENROUTER SUMMARY ERROR:", error.response?.data?.error?.message || error.message);
-      break;
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) return parsed;
+    } catch {
+      // Try the minimally repaired candidate before using the local fallback.
     }
   }
-
-  return createFallbackSummary(text);
+  return null;
 };
 
 export const generateArticleEnrichment = async ({ title = "", description = "", content = "" }) => {
@@ -87,7 +63,7 @@ export const generateArticleEnrichment = async ({ title = "", description = "", 
         role: "user",
         content: `Return one strict valid JSON object only; do not use Markdown or code fences. Create original, factual AI-assisted news content from the attributed source. Use genuinely fresh wording: do not copy a sentence, paragraph, or any sequence of eight source words. Do not add facts, guesses, opinions, or keyword stuffing.
 
-Required JSON: {"rewrittenTitle":"max 110 chars","aiSummary":"80-120 words","keyPoints":["4-6 factual takeaways"],"keyFacts":["3-6 concrete source-supported facts"],"whyItMatters":"one or two sentences on impact/background/what to watch","sentiment":"positive|neutral|negative|mixed","keywords":["5-10 natural keyword phrases"],"seoTitle":"original max 110 chars","metaDescription":"original factual max 160 chars"}. If the source cannot support every field, return {}.
+      Required JSON: {"rewrittenTitle":"max 110 chars","summary":"80-120 words","keyPoints":["4-6 factual takeaways"],"keyFacts":["3-6 concrete source-supported facts"],"whyThisMatters":"one or two sentences on impact/background/what to watch","sentiment":"positive|neutral|negative|mixed","keywords":["5-10 natural keyword phrases"],"seoTitle":"original max 110 chars","metaDescription":"original factual max 160 chars"}. If the source cannot support every field, return {}.
 
 Source title: ${title}
 Source description: ${description}
@@ -104,28 +80,28 @@ Source content: ${content}`,
     });
 
     const raw = response.data.choices?.[0]?.message?.content || "";
-    const parsed = JSON.parse(raw.replace(/^```json\s*|\s*```$/g, "").trim());
+    const parsed = parseJsonObject(raw) || {};
+    const fallback = createArticleEnrichmentFallback({ title, description, content });
+    const aiSummary = normalizeText(parsed.summary || parsed.aiSummary, 1500) || fallback.aiSummary;
+    const whyThisMatters = normalizeText(parsed.whyThisMatters || parsed.whyItMatters, 320) || fallback.whyThisMatters;
     return {
-      rewrittenTitle: String(parsed.rewrittenTitle || "").trim().slice(0, 110),
-      aiSummary: String(parsed.aiSummary || "").replace(/\s+/g, " ").trim(),
-      keyPoints: Array.isArray(parsed.keyPoints) ? parsed.keyPoints.map(String).map((point) => point.trim()).filter(Boolean).slice(0, 6) : [],
-      keyFacts: Array.isArray(parsed.keyFacts) ? parsed.keyFacts.map(String).map((fact) => fact.trim()).filter(Boolean).slice(0, 6) : [],
-      whyItMatters: String(parsed.whyItMatters || "").trim().slice(0, 320),
+      rewrittenTitle: normalizeText(parsed.rewrittenTitle, 110) || fallback.rewrittenTitle,
+      aiSummary,
+      summary: aiSummary,
+      keyPoints: normalizeList(parsed.keyPoints, 6).length ? normalizeList(parsed.keyPoints, 6) : fallback.keyPoints,
+      keyFacts: normalizeList(parsed.keyFacts, 6).length ? normalizeList(parsed.keyFacts, 6) : fallback.keyFacts,
+      whyThisMatters,
+      whyItMatters: whyThisMatters,
       sentiment: String(parsed.sentiment || "").toLowerCase(),
-      keywords: Array.isArray(parsed.keywords) ? parsed.keywords.map(String).map((keyword) => keyword.trim()).filter(Boolean).slice(0, 10) : [],
-      seoTitle: String(parsed.seoTitle || "").trim().slice(0, 110),
-      metaDescription: String(parsed.metaDescription || "").trim().slice(0, 160),
+      keywords: normalizeList(parsed.keywords, 10),
+      seoTitle: normalizeText(parsed.seoTitle, 110) || fallback.seoTitle,
+      metaDescription: normalizeText(parsed.metaDescription, 160) || fallback.metaDescription,
     };
   } catch (error) {
     console.log("OPENROUTER ARTICLE ERROR:", error.response?.data?.error?.message || error.message);
     throw new Error("OpenRouter enrichment response was invalid");
   }
 };
-
-export const hasFiveBulletPoints = (summary = "") => summary
-  .split("\n")
-  .filter((line) => /^\s*(?:-|•|\d+[.)])\s+/.test(line))
-  .length === 5;
 
 const createFallbackChatAnswer = ({ title, content, question }) => {
   const details = String(content || "").replace(/\s+/g, " ").trim();

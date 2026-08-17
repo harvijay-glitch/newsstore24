@@ -282,6 +282,7 @@ export function AdminNewsFormPage() {
   const [saving, setSaving] = useState(false);
   const [generatingSummary, setGeneratingSummary] = useState(false);
   const [aiSummary, setAiSummary] = useState("");
+  const [aiSections, setAiSections] = useState({ keyPoints: [], keyFacts: [], whyThisMatters: "" });
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
     title: "",
@@ -330,6 +331,7 @@ export function AdminNewsFormPage() {
           featured: Boolean(item.featured),
         });
         setAiSummary(item.aiSummary || "");
+        setAiSections({ keyPoints: item.keyPoints || [], keyFacts: item.keyFacts || [], whyThisMatters: item.whyThisMatters || item.whyItMatters || "" });
       } catch (requestError) {
         console.error("Failed to fetch news item for edit:", requestError);
         setError("Could not load this news item.");
@@ -360,6 +362,11 @@ export function AdminNewsFormPage() {
       const response = await API.post("/ai/summary", { text: textToSummarize });
       const generatedSummary = response.data.summary || "";
       setAiSummary(generatedSummary);
+      setAiSections({
+        keyPoints: response.data.keyPoints || [],
+        keyFacts: response.data.keyFacts || [],
+        whyThisMatters: response.data.whyThisMatters || response.data.whyItMatters || "",
+      });
       setFormData((current) => ({ ...current, aiStatus: "completed" }));
     } catch (requestError) {
       console.error("Generate AI summary failed:", requestError);
@@ -378,6 +385,10 @@ export function AdminNewsFormPage() {
       const payload = {
         ...formData,
         aiSummary,
+        keyPoints: aiSections.keyPoints,
+        keyFacts: aiSections.keyFacts,
+        whyThisMatters: aiSections.whyThisMatters,
+        whyItMatters: aiSections.whyThisMatters,
         status: nextStatus || formData.status,
         aiStatus: aiSummary ? "completed" : formData.aiStatus,
         featured: Boolean(formData.featured),
@@ -533,6 +544,12 @@ export function AdminNewsFormPage() {
                 <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-3">
                   <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-700">AI Summary</p>
                   <p className="whitespace-pre-line text-sm leading-6 text-slate-700">{aiSummary}</p>
+                  <p className="mt-3 text-sm font-bold text-emerald-800">Key Points</p>
+                  <ul className="list-disc pl-5 text-sm text-slate-700">{aiSections.keyPoints.map((point) => <li key={point}>{point}</li>)}</ul>
+                  <p className="mt-3 text-sm font-bold text-emerald-800">Key Facts</p>
+                  <ul className="list-disc pl-5 text-sm text-slate-700">{aiSections.keyFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
+                  <p className="mt-3 text-sm font-bold text-emerald-800">Why This Matters</p>
+                  <p className="text-sm leading-6 text-slate-700">{aiSections.whyThisMatters}</p>
                 </div>
               )}
             </div>

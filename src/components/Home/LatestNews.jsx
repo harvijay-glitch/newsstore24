@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { getNewsAISummary } from "../../services/aiService";
+import { getNewsAIEnrichment } from "../../services/aiService";
 import { getRecommendations } from "../../services/newsService";
 import NewsChatModal from "../NewsChatModal";
 import { formatArticleDate } from "../../utils/articleDate";
@@ -9,7 +9,7 @@ import FactCheckBadge from "../FactCheckBadge";
 import TrendingBadge from "../TrendingBadge";
 
 function LatestNews({ news, loading, filterLabel }) {
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(false);
   const [summaryTitle, setSummaryTitle] = useState("");
   const [chatArticle, setChatArticle] = useState(null);
@@ -47,13 +47,15 @@ function LatestNews({ news, loading, filterLabel }) {
   const handleSummary = async (item) => {
     const id = item._id || item.id;
     setSummaryTitle(item.title);
-    setSummary("");
+    setSummary(null);
     setLoadingSummary(true);
 
     try {
       // Existing background summaries appear instantly; new ones are cached by the server.
-      const result = item.aiSummary || (id && (await getNewsAISummary(id)));
-      setSummary(result || "Summary is not available for this article.");
+      const result = item.aiSummary
+        ? { summary: item.aiSummary, keyPoints: item.keyPoints || [], keyFacts: item.keyFacts || [], whyThisMatters: item.whyThisMatters || item.whyItMatters || "" }
+        : (id && await getNewsAIEnrichment(id));
+      setSummary(result || { summary: "Summary is not available for this article.", keyPoints: [], keyFacts: [], whyThisMatters: "" });
     } catch (error) {
       console.error("AI Summary Error:", error);
       setSummary("Unable to generate AI summary. Please try again.");
@@ -63,7 +65,7 @@ function LatestNews({ news, loading, filterLabel }) {
   };
 
   const closeSummary = () => {
-    setSummary("");
+    setSummary(null);
     setSummaryTitle("");
   };
 
@@ -101,7 +103,14 @@ function LatestNews({ news, loading, filterLabel }) {
           <div className="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4">
             <h2 className="text-2xl font-bold mb-2">AI Summary</h2>
             <p className="text-sm text-gray-500 mb-4 line-clamp-2">{summaryTitle}</p>
-            {loadingSummary ? <p>Generating bullet points...</p> : <div className="whitespace-pre-wrap text-gray-700">{summary}</div>}
+            {loadingSummary ? <p>Generating complete AI brief...</p> : (
+              <div className="space-y-5 text-gray-700">
+                <div><h3 className="font-bold">AI Summary</h3><p className="mt-1 whitespace-pre-wrap">{summary.summary}</p></div>
+                <div><h3 className="font-bold">Key Points</h3><ul className="mt-1 list-disc pl-5">{(summary.keyPoints || []).map((point) => <li key={point}>{point}</li>)}</ul></div>
+                <div><h3 className="font-bold">Key Facts</h3><ul className="mt-1 list-disc pl-5">{(summary.keyFacts || []).map((fact) => <li key={fact}>{fact}</li>)}</ul></div>
+                <div><h3 className="font-bold">Why This Matters</h3><p className="mt-1">{summary.whyThisMatters || summary.whyItMatters}</p></div>
+              </div>
+            )}
             <button onClick={closeSummary} className="mt-6 bg-red-600 text-white px-5 py-2 rounded-lg hover:bg-red-700">Close</button>
           </div>
         </div>

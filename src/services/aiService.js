@@ -18,6 +18,11 @@ export const getNewsAISummary = async (id) => {
   return response.data.summary;
 };
 
+export const getNewsAIEnrichment = async (id) => {
+  const response = await API.get(`/ai/summary/${id}`);
+  return response.data;
+};
+
 export const askAIAboutNews = async (article, question) => {
   const response = await API.post("/ai/chat", {
     title: article.title,

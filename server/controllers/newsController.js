@@ -285,6 +285,10 @@ export const createAdminNews = async (req, res) => {
       featured = false,
       publishedAt,
       aiSummary,
+      keyPoints = [],
+      keyFacts = [],
+      whyThisMatters = "",
+      whyItMatters = "",
     } = req.body || {};
 
     if (!title || !String(title).trim()) {
@@ -312,6 +316,10 @@ export const createAdminNews = async (req, res) => {
       featured: Boolean(featured),
       publishedAt: publishedAt ? new Date(publishedAt) : null,
       aiSummary: String(aiSummary || "").trim(),
+      keyPoints: Array.isArray(keyPoints) ? keyPoints.map(String).map((point) => point.trim()).filter(Boolean) : [],
+      keyFacts: Array.isArray(keyFacts) ? keyFacts.map(String).map((fact) => fact.trim()).filter(Boolean) : [],
+      whyThisMatters: String(whyThisMatters || whyItMatters || "").trim(),
+      whyItMatters: String(whyItMatters || whyThisMatters || "").trim(),
       slug: `${normalizedSlug}${existingSlugCount ? `-${Date.now()}` : ""}`,
       views: 0,
       bookmarked: false,
@@ -422,6 +430,11 @@ export const updateAdminNews = async (req, res) => {
       aiStatus,
       featured,
       publishedAt,
+      aiSummary,
+      keyPoints,
+      keyFacts,
+      whyThisMatters,
+      whyItMatters,
     } = req.body || {};
 
     if (!title || !String(title).trim()) {
@@ -441,6 +454,14 @@ export const updateAdminNews = async (req, res) => {
     item.author = String(author || item.author || "").trim();
     item.seoTitle = String(seoTitle ?? item.seoTitle ?? "");
     item.metaDescription = String(metaDescription ?? item.metaDescription ?? "");
+    if (aiSummary !== undefined) item.aiSummary = String(aiSummary || "").trim();
+    if (keyPoints !== undefined) item.keyPoints = Array.isArray(keyPoints) ? keyPoints.map(String).map((point) => point.trim()).filter(Boolean) : [];
+    if (keyFacts !== undefined) item.keyFacts = Array.isArray(keyFacts) ? keyFacts.map(String).map((fact) => fact.trim()).filter(Boolean) : [];
+    if (whyThisMatters !== undefined || whyItMatters !== undefined) {
+      const context = String(whyThisMatters || whyItMatters || "").trim();
+      item.whyThisMatters = context;
+      item.whyItMatters = context;
+    }
     item.publishStatus = validStatus;
     item.aiStatus = validAiStatus;
     item.featured = Boolean(featured);

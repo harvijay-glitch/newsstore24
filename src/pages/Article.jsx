@@ -29,7 +29,7 @@ function Article({ language = "en" }) {
         article.originalTitle || article.title || "",
         article.originalDescription || article.description || "",
         article.aiSummary || article.description || "",
-        article.whyItMatters || "",
+        article.whyThisMatters || article.whyItMatters || "",
         ...(article.keyPoints || []),
         ...(article.keyFacts || []),
       ];
@@ -60,14 +60,14 @@ function Article({ language = "en" }) {
   const visibleTitle = article.originalTitle || article.title || title;
   const sourceExcerpt = article.originalDescription || "";
   const author = article.authorName || article.author || article.source || "NewsStore24 Editorial Desk";
-  const keyPoints = article.keyPoints || [];
-  const keyFacts = article.keyFacts || [];
+  const keyPoints = article.keyPoints?.length ? article.keyPoints : [article.description || "Key points are not available for this article yet."];
+  const keyFacts = article.keyFacts?.length ? article.keyFacts : [article.description || "Key facts are not available for this article yet."];
   const displayTitle = translatedContent?.title || visibleTitle;
   const displayExcerpt = translatedContent?.description || sourceExcerpt;
   const displaySummary = translatedContent?.summary || article.aiSummary || article.description;
   const displayKeyPoints = translatedContent?.keyPoints?.length ? translatedContent.keyPoints : keyPoints;
   const displayKeyFacts = translatedContent?.keyFacts?.length ? translatedContent.keyFacts : keyFacts;
-  const displayWhyItMatters = translatedContent?.whyItMatters || article.whyItMatters;
+  const displayWhyItMatters = translatedContent?.whyItMatters || article.whyThisMatters || article.whyItMatters || "Review the original source for the latest context and updates.";
 
   return (
     <>

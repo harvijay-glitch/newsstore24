@@ -1,6 +1,6 @@
 import News from "../models/News.js";
 import DailyNewsProcessing from "../models/DailyNewsProcessing.js";
-import { generateArticleEnrichment } from "./openRouterService.js";
+import { createArticleEnrichmentFallback, generateArticleEnrichment } from "./openRouterService.js";
 import { generateAndStoreArticleImage } from "./aiImageService.js";
 import { isPublishable } from "./editorialService.js";
 
@@ -45,7 +45,7 @@ export const generatePendingAISummaries = async (newsIds = [], processingDate = 
           description: enrichment.aiSummary,
           aiSummary: enrichment.aiSummary,
           seoTitle: enrichment.seoTitle,
-          whyThisMatters: enrichment.whyItMatters,
+          whyThisMatters: enrichment.whyThisMatters,
           whyItMatters: enrichment.whyItMatters,
           metaDescription: enrichment.metaDescription,
           keyPoints: enrichment.keyPoints,
@@ -62,7 +62,7 @@ export const generatePendingAISummaries = async (newsIds = [], processingDate = 
           description: enrichment.aiSummary,
           aiSummary: enrichment.aiSummary,
           seoTitle: enrichment.seoTitle,
-          whyThisMatters: enrichment.whyItMatters,
+          whyThisMatters: enrichment.whyThisMatters,
           whyItMatters: enrichment.whyItMatters,
           metaDescription: enrichment.metaDescription,
           keyPoints: enrichment.keyPoints,
@@ -85,6 +85,7 @@ export const generatePendingAISummaries = async (newsIds = [], processingDate = 
         return "completed";
       } catch (err) {
         console.log("AI Failed:", news.title, "-", err.message);
+        const fallback = createArticleEnrichmentFallback(news);
 
         // News availability must not depend on an optional AI provider. Keep
         // the source article visible when enrichment is unavailable, while
@@ -92,7 +93,12 @@ export const generatePendingAISummaries = async (newsIds = [], processingDate = 
         await News.findByIdAndUpdate(news._id, {
           aiStatus: "completed",
           aiError: String(err.message || "AI enrichment failed").slice(0, 500),
-          aiSummary: news.description || news.content || "Summary is unavailable; please read the original source.",
+          aiSummary: fallback.aiSummary,
+          keyPoints: fallback.keyPoints,
+          keyFacts: fallback.keyFacts,
+          whyThisMatters: fallback.whyThisMatters,
+          whyItMatters: fallback.whyItMatters,
+          aiResponse: fallback,
           publishStatus: "published",
         });
         if (processingDate) await DailyNewsProcessing.updateOne(
