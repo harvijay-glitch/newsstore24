@@ -91,10 +91,29 @@ const releaseDailyImportSlot = async (processingDate) => {
   );
 };
 
+const repairBurstImportQuota = async (processingDate) => {
+  const recentArticles = await News.find({ createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } })
+    .sort({ createdAt: -1 })
+    .limit(DAILY_IMPORT_LIMIT)
+    .select("createdAt");
+  if (recentArticles.length < DAILY_IMPORT_LIMIT || recentArticles.some((article) => getProcessingDate(article.createdAt) !== processingDate)) return;
+
+  const newest = new Date(recentArticles[0].createdAt).getTime();
+  const oldest = new Date(recentArticles[recentArticles.length - 1].createdAt).getTime();
+  if (newest - oldest > 15 * 60 * 1000) return;
+
+  const result = await DailyNewsProcessing.updateOne(
+    { processingDate, importedCount: { $gte: DAILY_IMPORT_LIMIT } },
+    { $set: { importedCount: 0, lastImportedAt: null } }
+  );
+  if (result.modifiedCount) console.warn(`[News import ${processingDate}] Repaired a burst quota reservation; future imports will follow the 90-minute schedule.`);
+};
+
 // Fetch News
 export const fetchAndSaveNews = async (category = "General", generateSummaries = true) => {
   try {
     const processingDate = getProcessingDate();
+    await repairBurstImportQuota(processingDate);
     const dailyRecord = await DailyNewsProcessing.findOne({ processingDate }).lean();
     if (dailyRecord?.importedCount >= DAILY_IMPORT_LIMIT) {
       console.log(`[News import ${processingDate}] Daily limit reached (10/10); no GNews or OpenRouter call made.`);
