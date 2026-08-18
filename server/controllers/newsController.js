@@ -22,7 +22,18 @@ export const fetchNews = async (req, res) => {
     const hasCategoryFilter = Boolean(req.query.category);
     const requestedCategory = String(req.query.category || "general").toLowerCase();
     const category = allowedCategories.includes(requestedCategory) ? requestedCategory : "general";
-    let articles = await fetchAndSaveNews(category);
+    const existingFilter = { publishStatus: "published", aiStatus: "completed" };
+    if (hasCategoryFilter) existingFilter.category = { $regex: `^${category}$`, $options: "i" };
+
+    // Serve saved news immediately. GNews/OpenRouter refreshes must not block
+    // the homepage while external providers or AI enrichment are slow.
+    let articles = await News.find(existingFilter).sort({ publishedAt: -1 }).limit(50).lean();
+    const refreshPromise = fetchAndSaveNews(category);
+    if (!articles.length) {
+      articles = await refreshPromise;
+    } else {
+      refreshPromise.catch((refreshError) => console.error("Background news refresh failed:", refreshError.message));
+    }
 
     // Keep category pages usable if the external news provider is temporarily
     // empty or unavailable. Older saved articles can still be matched by the
