@@ -20,6 +20,9 @@ import SavedNews from "./pages/SavedNews";
 import Article from "./pages/Article";
 import Author from "./pages/Author";
 import Search from "./pages/Search";
+import About from "./pages/About";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Terms from "./pages/Terms";
 import AdminMedia from "./pages/AdminMedia";
 import AdminPages from "./pages/AdminPages";
 import CmsPageView from "./pages/CmsPageView";
@@ -48,9 +51,9 @@ function App() {
         <Route path="/technology" element={<CategoryNews category="technology" title="Technology" />} />
         <Route path="/sports" element={<CategoryNews category="sports" title="Sports" />} />
         <Route path="/contact" element={<CmsPageView />} />
-        <Route path="/about" element={<CmsPageView />} />
-        <Route path="/privacy" element={<CmsPageView />} />
-        <Route path="/terms" element={<CmsPageView />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<Terms />} />
         <Route path="/saved" element={<SavedNews />} />
         <Route path="/daily-brief" element={<DailyBrief />} />
         <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
