@@ -22,8 +22,16 @@ function Article({ language = "en" }) {
   const [loadingRelatedSummary, setLoadingRelatedSummary] = useState(false);
 
   useEffect(() => {
-    getNewsArticle(id).then(setArticle).catch(() => setError("This news article could not be loaded."));
-    getRelatedNews(id).then(setRelatedNews).catch(() => setRelatedNews([]));
+    let active = true;
+    setArticle(null);
+    setRelatedNews([]);
+    getNewsArticle(id)
+      .then((nextArticle) => { if (active) setArticle(nextArticle); })
+      .catch(() => { if (active) setError("This news article could not be loaded."); });
+    getRelatedNews(id)
+      .then((nextRelatedNews) => { if (active) setRelatedNews(nextRelatedNews); })
+      .catch(() => { if (active) setRelatedNews([]); });
+    return () => { active = false; };
   }, [id]);
 
   const toggleLike = () => {
@@ -188,7 +196,7 @@ function Article({ language = "en" }) {
               <h3 className="mt-1 font-bold line-clamp-2">{item.seoTitle || item.title}</h3>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link to={`/article/${item.slug || item._id}`} className="rounded-lg bg-blue-600 px-3 py-2 text-xs font-bold text-white hover:bg-blue-700">Read</Link>
-                <button type="button" onClick={() => showRelatedSummary(item)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">AI Summary</button>
+                <button type="button" onClick={(event) => { event.preventDefault(); event.stopPropagation(); showRelatedSummary(item); }} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white hover:bg-emerald-700">AI Summary</button>
               </div>
             </article>
           ))}</div> : <p className="mt-4 text-slate-500">No related stories are available yet.</p>}
