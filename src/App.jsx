@@ -38,6 +38,15 @@ function App() {
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   useEffect(() => {
+    if (typeof window.gtag !== "function") return;
+    window.gtag("event", "page_view", {
+      page_title: document.title,
+      page_location: window.location.href,
+      page_path: `${location.pathname}${location.search}`,
+    });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }, [location.pathname]);
 
