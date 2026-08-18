@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Navigate, Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import BreakingNews from "./components/BreakingNews";
@@ -87,6 +87,7 @@ function App() {
         <Route path="/article/:id" element={<Article language={language} />} />
         <Route path="/author/:name" element={<Author />} />
         <Route path="/search" element={<Search />} />
+        <Route path="/livingMagazine" element={<Navigate to="/" replace />} />
       </Routes>
 
       {!isAdminRoute && <Footer />}
