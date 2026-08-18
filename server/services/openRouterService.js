@@ -8,14 +8,6 @@ const normalizeList = (value, maxItems) => (Array.isArray(value)
   ? value.map((item) => normalizeText(item, 300)).filter(Boolean).slice(0, maxItems)
   : []);
 
-const createKeywordFallback = ({ title = "", description = "" } = {}) => {
-  const stopWords = new Set(["about", "after", "before", "could", "their", "there", "which", "with", "from", "this", "that", "have", "news"]);
-  const keywords = [...new Set(`${title} ${description}`.toLowerCase().match(/[a-z][a-z-]{3,}/g) || [])]
-    .filter((word) => !stopWords.has(word))
-    .slice(0, 8);
-  return [...keywords, "news update", "latest developments"].slice(0, 8);
-};
-
 export const ensureMinimumList = (value, fallback = [], minimum = 10, maximum = 10) => {
   const result = [...normalizeList(value, maximum), ...normalizeList(fallback, maximum)]
     .filter((item, index, items) => items.indexOf(item) === index)
@@ -63,7 +55,7 @@ export const createArticleEnrichmentFallback = ({ title = "", description = "", 
     whyThisMatters: "Readers should review the original source for complete context and later updates. The story may develop as more information becomes available. Its wider impact depends on verified details and responses. Check the source again for follow-up reporting. The report should be read in its full published context. Important claims should be verified with the original publisher. Further reporting may add context to this developing story. Readers should distinguish confirmed information from later updates. The source remains the best place for follow-up details. This explanation is based on the available article information.",
     whyItMatters: "Readers should review the original source for complete context and later updates. The story may develop as more information becomes available. Its wider impact depends on verified details and responses. Check the source again for follow-up reporting. The report should be read in its full published context. Important claims should be verified with the original publisher. Further reporting may add context to this developing story. Readers should distinguish confirmed information from later updates. The source remains the best place for follow-up details. This explanation is based on the available article information.",
     sentiment: "neutral",
-    keywords: createKeywordFallback({ title, description }),
+    keywords: [],
     seoTitle: articleTitle,
     metaDescription: sourceDetail.slice(0, 160),
   };
@@ -132,7 +124,7 @@ Source content: ${content}`,
       whyThisMatters: ensureMinimumWhy(whyThisMatters, fallback.whyThisMatters),
       whyItMatters: ensureMinimumWhy(whyThisMatters, fallback.whyThisMatters),
       sentiment: String(parsed.sentiment || "").toLowerCase(),
-      keywords: [...new Set([...normalizeList(parsed.keywords, 10), ...fallback.keywords])].slice(0, 10),
+      keywords: normalizeList(parsed.keywords, 10),
       seoTitle: normalizeText(parsed.seoTitle, 110) || fallback.seoTitle,
       metaDescription: normalizeText(parsed.metaDescription, 160) || fallback.metaDescription,
     };
