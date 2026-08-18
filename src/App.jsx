@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
@@ -36,6 +36,10 @@ function App() {
   const toggleDarkMode = () => setDarkMode((current) => { localStorage.setItem("inkl-dark", String(!current)); return !current; });
   const changeLanguage = (nextLanguage) => { localStorage.setItem("newsstore24-language", nextLanguage); setLanguage(nextLanguage); };
   const isAdminRoute = location.pathname.startsWith("/admin");
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [location.pathname]);
 
   return (
     <div className={darkMode ? "min-h-screen bg-slate-900 text-slate-100" : "min-h-screen bg-white text-slate-950"}>
