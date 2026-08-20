@@ -79,6 +79,25 @@ export const fetchNews = async (req, res) => {
   }
 };
 
+export const getNewsSitemap = async (req, res) => {
+  try {
+    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    const articles = await News.find({
+      publishStatus: "published",
+      slug: { $exists: true, $ne: "" },
+    }).select("slug updatedAt publishedAt").sort({ publishedAt: -1 }).limit(50000).lean();
+    const escapeXml = (value) => String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
+    const urls = articles.map((article) => {
+      const lastModified = article.updatedAt || article.publishedAt;
+      return `<url><loc>${escapeXml(`${siteUrl}/article/${article.slug}`)}</loc>${lastModified ? `<lastmod>${new Date(lastModified).toISOString()}</lastmod>` : ""}</url>`;
+    }).join("");
+    res.type("application/xml").send(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls}</urlset>`);
+  } catch (error) {
+    console.error("News sitemap failed:", error.message);
+    res.status(500).type("application/xml").send("<?xml version=\"1.0\" encoding=\"UTF-8\"?><urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"></urlset>");
+  }
+};
+
 // =========================
 // Search News
 // =========================

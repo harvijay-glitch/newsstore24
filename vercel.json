@@ -1,5 +1,9 @@
 {
+  "redirects": [
+    { "source": "/livingMagazine", "destination": "/", "permanent": true }
+  ],
   "rewrites": [
+    { "source": "/sitemap-news.xml", "destination": "https://newsstore24-1.onrender.com/api/news/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

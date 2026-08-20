@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import SEO from "../components/SEO";
 import { getNewsArticle, getRelatedNews } from "../services/newsService";
 import { translateTexts } from "../services/translationService";
@@ -7,6 +7,7 @@ import { formatArticleDate } from "../utils/articleDate";
 
 function Article({ language = "en" }) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [article, setArticle] = useState(null);
   const [relatedNews, setRelatedNews] = useState([]);
   const [error, setError] = useState("");
@@ -18,12 +19,17 @@ function Article({ language = "en" }) {
   const [comments, setComments] = useState([]);
 
   useEffect(() => {
-    getNewsArticle(id).then(setArticle).catch(() => setError("This news article could not be loaded."));
+    getNewsArticle(id).then((loadedArticle) => {
+      setArticle(loadedArticle);
+      if (loadedArticle?.slug && loadedArticle.slug !== id) {
+        navigate(`/article/${loadedArticle.slug}`, { replace: true });
+      }
+    }).catch(() => setError("This news article could not be loaded."));
     getRelatedNews(id).then(setRelatedNews).catch(() => setRelatedNews([]));
     setLiked(localStorage.getItem(`newsstore24-liked-${id}`) === "true");
     setBookmarked(localStorage.getItem(`newsstore24-bookmarked-${id}`) === "true");
     setComments(JSON.parse(localStorage.getItem(`newsstore24-comments-${id}`) || "[]"));
-  }, [id]);
+  }, [id, navigate]);
 
   const toggleLike = () => {
     const next = !liked;

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   fetchNews,
+  getNewsSitemap,
   searchNews,
   toggleBookmark,
   getBookmarkedNews,
@@ -61,6 +62,7 @@ router.put("/admin/pages", requireAuth, requireAdmin, upsertAdminPage);
 // Latest News
 // =========================
 router.get("/", fetchNews);
+router.get("/sitemap.xml", getNewsSitemap);
 
 // =========================
 // Search News
@@ -78,6 +80,7 @@ router.get("/recommendations", getRecommendations);
 router.get("/analytics", requireAuth, requireAdmin, getAnalytics);
 router.get("/pages/:slug", getCmsPage);
 router.get("/image/:fileId", getGeneratedNewsImage);
+router.get("/sitemap.xml", getNewsSitemap);
 router.get("/:id/related", getRelatedNews);
 router.get("/author/:name", getAuthorArticles);
 router.get("/:id", getNewsArticle);
