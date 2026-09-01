@@ -191,6 +191,7 @@ function Article({ language = "en" }) {
       .slice(0, 8);
   const articleImage = article.generatedImageUrl || article.image;
   const articleContent = safeArticleHtml(article.content);
+  const isManualPost = article.source === "Admin CMS";
 
   return (
     <>
@@ -204,7 +205,7 @@ function Article({ language = "en" }) {
         <p className="mt-6 text-sm font-bold uppercase tracking-[0.16em] text-red-600">{article.category || "News"} · Reported by {article.source || "Original source"}</p>
         <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl md:text-5xl">{displayTitle}</h1>
         {displayExcerpt && <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">{displayExcerpt}</p>}
-        {articleImage && <img src={articleImage} alt={displayTitle} className="mt-7 aspect-video w-full rounded-2xl object-cover shadow-sm" />}
+        {articleImage && <a href={articleImage} target="_blank" rel="noopener noreferrer" className="mt-7 block" title="Open image"><img src={articleImage} alt={displayTitle} className="aspect-video w-full rounded-2xl object-cover shadow-sm transition hover:opacity-90" /></a>}
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-y border-slate-200 py-3">
           <a href="https://www.google.com/preferences/source?q=https://www.newsstore24.com/" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-1 rounded-lg border border-red-500 px-4 text-sm font-bold text-slate-900 hover:bg-red-50">Prefer us on <span className="bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500 bg-clip-text text-xl font-black text-transparent">G</span></a>
@@ -223,11 +224,11 @@ function Article({ language = "en" }) {
           <p className="mt-1"><span className="font-bold text-slate-900">Updated: </span>{formatArticleDate(article.updatedAt || article.publishedAt)}</p>
         </div>
 
-        <section className="mt-8 border-l-4 border-red-600 pl-5">
+        {!isManualPost && <section className="mt-8 border-l-4 border-red-600 pl-5">
           <p className="text-xs font-bold uppercase tracking-[0.16em] text-red-600">AI-assisted newsroom brief</p>
           <h2 className="text-2xl font-black">AI Summary</h2>
           <p className="mt-3 whitespace-pre-line text-base leading-8 text-slate-700 sm:text-lg">{displaySummary}</p>
-        </section>
+        </section>}
 
         {articleContent && (
           <section className="prose prose-slate mt-8 max-w-none prose-a:text-blue-700 prose-a:underline prose-a:decoration-blue-300 hover:prose-a:text-blue-900">
@@ -235,27 +236,27 @@ function Article({ language = "en" }) {
           </section>
         )}
 
-        <section className="mt-8 rounded-2xl bg-slate-50 p-6">
+        {!isManualPost && <section className="mt-8 rounded-2xl bg-slate-50 p-6">
           <h2 className="text-2xl font-black">Key Points</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-slate-700">{displayKeyPoints.map((point) => <li key={point}>{point}</li>)}</ul>
-        </section>
+        </section>}
 
-        <section className="mt-8 rounded-2xl border border-sky-200 bg-sky-50 p-6">
+        {!isManualPost && <section className="mt-8 rounded-2xl border border-sky-200 bg-sky-50 p-6">
           <h2 className="text-2xl font-black text-sky-950">Key Facts</h2>
           <ul className="mt-4 list-disc space-y-2 pl-5 text-sky-950">{displayKeyFacts.map((fact) => <li key={fact}>{fact}</li>)}</ul>
-        </section>
+        </section>}
 
-        <section className="mt-8 rounded-2xl border border-violet-200 bg-violet-50 p-6">
+        {!isManualPost && <section className="mt-8 rounded-2xl border border-violet-200 bg-violet-50 p-6">
           <h2 className="text-2xl font-black text-violet-950">Why This Matters</h2>
           <p className="mt-3 whitespace-pre-line leading-7 text-violet-950">{displayWhyItMatters}</p>
-        </section>
-        {displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2" aria-label="Related news tags">{displayTags.map((tag) => <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="rounded-full bg-white px-3 py-1 text-xs font-black text-black ring-1 ring-violet-200 transition hover:bg-violet-100">{tag}</Link>)}</div>}
+        </section>}
+        {!isManualPost && displayTags.length > 0 && <div className="mt-4 flex flex-wrap gap-2" aria-label="Related news tags">{displayTags.map((tag) => <Link key={tag} to={`/search?q=${encodeURIComponent(tag)}`} className="rounded-full bg-white px-3 py-1 text-xs font-black text-black ring-1 ring-violet-200 transition hover:bg-violet-100">{tag}</Link>)}</div>}
 
-        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        {!isManualPost && <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">Original Source</h2>
           <p className="mt-2 text-slate-700">Reported by {article.source || "the original publisher"}. The AI Summary and analysis above are original AI-assisted editorial content, not a copy of the source report.</p>
           {article.url && <a href={article.url} target="_blank" rel="noopener noreferrer" className="mt-3 inline-block rounded-lg bg-blue-600 px-5 py-3 font-bold text-white hover:bg-blue-700">Read original article <span aria-hidden="true">↗</span></a>}
-        </section>
+        </section>}
         <section id="article-comments" className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-black">Comments</h2>
           <form onSubmit={submitComment} className="mt-4 flex gap-2"><input value={comment} onChange={(event) => setComment(event.target.value)} placeholder="Write a comment" className="min-w-0 flex-1 rounded-lg border border-slate-200 px-3 py-2" /><button className="rounded-lg bg-red-600 px-4 py-2 font-semibold text-white">Post</button></form>

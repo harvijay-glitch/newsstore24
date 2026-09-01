@@ -17,6 +17,7 @@ function Navbar({ darkMode, newsUpdatedAt }) {
     { name: "Stock", path: "/stock" },
     { name: "Technology", path: "/technology" },
     { name: "Sports", path: "/sports" },
+    { name: "Blog", path: "/blog" },
   ];
 
   useEffect(() => {

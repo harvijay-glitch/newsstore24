@@ -4,7 +4,7 @@ import API from "../services/api";
 import { AdminLayout } from "./AdminDashboard";
 
 const statusOptions = ["all", "draft", "published"];
-const categoryOptions = ["General", "World", "Business", "Technology", "Sports", "Crypto", "Stock"];
+const categoryOptions = ["General", "Blog", "World", "Business", "Technology", "Sports", "Crypto", "Stock"];
 
 function formatDate(dateString) {
   if (!dateString) return "—";

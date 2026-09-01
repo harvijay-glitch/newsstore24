@@ -20,7 +20,7 @@ const NEWS_CACHE_TTL_MS = 5 * 60 * 1000;
 // =========================
 export const fetchNews = async (req, res) => {
   try {
-    const allowedCategories = ["general", "world", "business", "technology", "sports", "crypto", "stock", "india", "entertainment", "science"];
+    const allowedCategories = ["general", "world", "business", "technology", "sports", "crypto", "stock", "india", "entertainment", "science", "blog"];
     const hasCategoryFilter = Boolean(req.query.category);
     const requestedCategory = String(req.query.category || "general").toLowerCase();
     const category = allowedCategories.includes(requestedCategory) ? requestedCategory : "general";
@@ -29,7 +29,11 @@ export const fetchNews = async (req, res) => {
     if (cachedResponse && Date.now() - cachedResponse.createdAt < NEWS_CACHE_TTL_MS) {
       return res.json(cachedResponse.payload);
     }
-    let articles = await fetchAndSaveNews(category);
+    // Blog is an editorial-only category. Do not call the external news
+    // provider; show exactly the posts published from the admin editor.
+    let articles = category === "blog"
+      ? await News.find({ category: { $regex: "^blog$", $options: "i" }, publishStatus: "published", aiStatus: "completed" }).sort({ publishedAt: -1 }).limit(50)
+      : await fetchAndSaveNews(category);
 
     // Keep category pages usable if the external news provider is temporarily
     // empty or unavailable. Older saved articles can still be matched by the
