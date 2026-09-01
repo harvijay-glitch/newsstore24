@@ -33,7 +33,12 @@ function RichTextEditor({ value, onChange }) {
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("italic")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm italic text-slate-700 hover:bg-slate-100">I</button>
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("insertUnorderedList")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">List</button>
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => format("formatBlock", "h2")} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-100">Heading</button>
-        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { const url = window.prompt("Link URL"); if (url) format("createLink", url); }} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Link</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => {
+          const enteredUrl = window.prompt("Paste link URL (select the text first)")?.trim();
+          if (!enteredUrl) return;
+          const url = /^(https?:|mailto:|tel:|\/)/i.test(enteredUrl) ? enteredUrl : `https://${enteredUrl}`;
+          format("createLink", url);
+        }} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-100">Link</button>
       </div>
       <div ref={editorRef} contentEditable role="textbox" aria-label="Post content" onInput={(event) => onChange(event.currentTarget.innerHTML)} className="min-h-72 p-4 text-slate-900 outline-none" />
     </div>

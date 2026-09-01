@@ -5,6 +5,66 @@ import { getNewsArticle, getRelatedNews } from "../services/newsService";
 import { translateTexts } from "../services/translationService";
 import { formatArticleDate } from "../utils/articleDate";
 
+const safeArticleHtml = (html = "") => {
+  if (typeof window === "undefined") return "";
+
+  const documentFragment = new DOMParser().parseFromString(String(html), "text/html");
+  documentFragment.querySelectorAll("script, style, iframe, object, embed, form, input, button").forEach((element) => element.remove());
+
+  documentFragment.querySelectorAll("*").forEach((element) => {
+    [...element.attributes].forEach((attribute) => {
+      const name = attribute.name.toLowerCase();
+      if (name.startsWith("on") || name === "style" || name === "srcdoc") element.removeAttribute(attribute.name);
+    });
+  });
+
+  documentFragment.querySelectorAll("a").forEach((link) => {
+    const href = link.getAttribute("href") || "";
+    if (!/^(https?:|mailto:|tel:|\/)/i.test(href)) {
+      link.removeAttribute("href");
+      return;
+    }
+    link.setAttribute("target", "_blank");
+    link.setAttribute("rel", "noopener noreferrer");
+  });
+
+  // URLs pasted as normal text in the editor should still be usable links.
+  // Existing anchors are left alone so manually linked text retains its label.
+  const textNodes = [];
+  const walker = documentFragment.createTreeWalker(documentFragment.body, NodeFilter.SHOW_TEXT);
+  let textNode = walker.nextNode();
+  while (textNode) {
+    if (!textNode.parentElement?.closest("a")) textNodes.push(textNode);
+    textNode = walker.nextNode();
+  }
+  textNodes.forEach((node) => {
+    const text = node.textContent || "";
+    const urlPattern = /(https?:\/\/[^\s<]+|www\.[^\s<]+)/gi;
+    if (!urlPattern.test(text)) return;
+    urlPattern.lastIndex = 0;
+
+    const replacement = document.createDocumentFragment();
+    let previousIndex = 0;
+    text.replace(urlPattern, (matched, index) => {
+      replacement.append(text.slice(previousIndex, index));
+      const visibleUrl = matched.replace(/[),.!?;:]+$/, "");
+      const trailingText = matched.slice(visibleUrl.length);
+      const link = document.createElement("a");
+      link.href = visibleUrl.startsWith("www.") ? `https://${visibleUrl}` : visibleUrl;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = visibleUrl;
+      replacement.append(link, trailingText);
+      previousIndex = index + matched.length;
+      return matched;
+    });
+    replacement.append(text.slice(previousIndex));
+    node.replaceWith(replacement);
+  });
+
+  return documentFragment.body.innerHTML;
+};
+
 function Article({ language = "en" }) {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -130,6 +190,7 @@ function Article({ language = "en" }) {
       .filter((tag) => !["about", "after", "before", "could", "their", "there", "which", "with", "from", "this", "that", "have", "news"].includes(tag))
       .slice(0, 8);
   const articleImage = article.generatedImageUrl || article.image;
+  const articleContent = safeArticleHtml(article.content);
 
   return (
     <>
@@ -167,6 +228,12 @@ function Article({ language = "en" }) {
           <h2 className="text-2xl font-black">AI Summary</h2>
           <p className="mt-3 whitespace-pre-line text-base leading-8 text-slate-700 sm:text-lg">{displaySummary}</p>
         </section>
+
+        {articleContent && (
+          <section className="prose prose-slate mt-8 max-w-none prose-a:text-blue-700 prose-a:underline prose-a:decoration-blue-300 hover:prose-a:text-blue-900">
+            <div dangerouslySetInnerHTML={{ __html: articleContent }} />
+          </section>
+        )}
 
         <section className="mt-8 rounded-2xl bg-slate-50 p-6">
           <h2 className="text-2xl font-black">Key Points</h2>

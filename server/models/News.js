@@ -110,7 +110,7 @@ const newsSchema = new mongoose.Schema(
       type: Number,
       min: 1,
       max: 10,
-      default: 0,
+      default: 1,
     },
 
     aiScoreFactors: {

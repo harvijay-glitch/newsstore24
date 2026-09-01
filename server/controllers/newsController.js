@@ -12,6 +12,8 @@ const categoryKeywords = {
   technology: "technology|tech|software|ai|digital|google|microsoft|cyber",
   sports: "sports|cricket|football|match|tournament|player|olympic",
 };
+const newsResponseCache = new Map();
+const NEWS_CACHE_TTL_MS = 5 * 60 * 1000;
 
 // =========================
 // Get Latest News
@@ -22,6 +24,11 @@ export const fetchNews = async (req, res) => {
     const hasCategoryFilter = Boolean(req.query.category);
     const requestedCategory = String(req.query.category || "general").toLowerCase();
     const category = allowedCategories.includes(requestedCategory) ? requestedCategory : "general";
+    const cacheKey = hasCategoryFilter ? category : "home";
+    const cachedResponse = newsResponseCache.get(cacheKey);
+    if (cachedResponse && Date.now() - cachedResponse.createdAt < NEWS_CACHE_TTL_MS) {
+      return res.json(cachedResponse.payload);
+    }
     let articles = await fetchAndSaveNews(category);
 
     // Keep category pages usable if the external news provider is temporarily
@@ -64,11 +71,13 @@ export const fetchNews = async (req, res) => {
         .sort((first, second) => new Date(second.publishedAt || 0) - new Date(first.publishedAt || 0));
     }
 
-    res.json({
+    const payload = {
       success: true,
       total: articles.length,
       articles,
-    });
+    };
+    newsResponseCache.set(cacheKey, { createdAt: Date.now(), payload });
+    res.json(payload);
   } catch (error) {
     console.log(error);
 
@@ -643,13 +652,25 @@ export const createAdminPost = async (req, res) => {
     }
 
     const cleanSlug = String(slug || title).trim();
-    const normalizedSlug = String(cleanSlug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "").replace(/-+/g, "-") || `post-${Date.now()}`;
-    const finalSlug = normalizedSlug;
-    const postCount = await News.countDocuments({ slug: finalSlug });
+    const normalizedSlug = String(cleanSlug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "") || `post-${Date.now()}`;
+    let finalSlug = normalizedSlug;
+    let suffix = 2;
+    // The article URL is unique too, so the saved slug and URL must always
+    // be generated together. This also lets admins reuse a title safely.
+    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    while (await News.exists({
+      $or: [
+        { slug: finalSlug },
+        { url: `${siteUrl}/article/${finalSlug}` },
+      ],
+    })) {
+      finalSlug = `${normalizedSlug}-${suffix}`;
+      suffix += 1;
+    }
 
     const finalPost = await News.create({
       title: String(title).trim(),
-      slug: finalSlug + (postCount ? `-${Date.now()}` : ""),
+      slug: finalSlug,
       category: String(category).trim(),
       content: String(content || ""),
       description: String(description || ""),
@@ -660,11 +681,12 @@ export const createAdminPost = async (req, res) => {
       author: String(author || "NewsStore24 Editorial Desk").trim(),
       publishStatus: status === "published" ? "published" : "draft",
       publishedAt: status === "published" ? new Date(publishedAt || Date.now()) : null,
-      url: `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${finalSlug}`,
+      url: `${siteUrl}/article/${finalSlug}`,
       source: "Admin CMS",
       originalTitle: String(title).trim(),
       aiStatus: "completed",
       aiSummary: String(description || ""),
+      aiImportance: 1,
       views: 0,
     });
 
@@ -709,8 +731,20 @@ export const updateAdminPost = async (req, res) => {
     }
 
     const nextSlug = String(slug || title).trim();
-    const normalizedSlug = String(nextSlug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "").replace(/-+/g, "-") || `post-${Date.now()}`;
-    const finalSlug = normalizedSlug;
+    const normalizedSlug = String(nextSlug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "") || `post-${Date.now()}`;
+    let finalSlug = normalizedSlug;
+    let suffix = 2;
+    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    while (await News.exists({
+      _id: { $ne: post._id },
+      $or: [
+        { slug: finalSlug },
+        { url: `${siteUrl}/article/${finalSlug}` },
+      ],
+    })) {
+      finalSlug = `${normalizedSlug}-${suffix}`;
+      suffix += 1;
+    }
 
     post.title = String(title).trim();
     post.slug = finalSlug;
@@ -726,7 +760,7 @@ export const updateAdminPost = async (req, res) => {
     post.author = String(author || post.author || "NewsStore24 Editorial Desk").trim();
     post.publishStatus = status === "published" ? "published" : "draft";
     post.publishedAt = status === "published" ? new Date(publishedAt || post.publishedAt || Date.now()) : null;
-    post.url = `${String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "")}/article/${post.slug}`;
+    post.url = `${siteUrl}/article/${post.slug}`;
     post.aiSummary = post.aiSummary || String(description || "");
 
     await post.save();
