@@ -14,6 +14,9 @@ const categoryKeywords = {
 };
 const newsResponseCache = new Map();
 const NEWS_CACHE_TTL_MS = 5 * 60 * 1000;
+const getPublicSiteUrl = () => String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com")
+  .replace(/\/$/, "")
+  .replace(/^https:\/\/newsstore24\.com(?=\/|$)/i, "https://www.newsstore24.com");
 
 // =========================
 // Get Latest News
@@ -94,7 +97,7 @@ export const fetchNews = async (req, res) => {
 
 export const getNewsSitemap = async (req, res) => {
   try {
-    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    const siteUrl = getPublicSiteUrl();
     const articles = await News.find({
       publishStatus: "published",
       slug: { $exists: true, $ne: "" },
@@ -661,7 +664,7 @@ export const createAdminPost = async (req, res) => {
     let suffix = 2;
     // The article URL is unique too, so the saved slug and URL must always
     // be generated together. This also lets admins reuse a title safely.
-    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    const siteUrl = getPublicSiteUrl();
     while (await News.exists({
       $or: [
         { slug: finalSlug },
@@ -738,7 +741,7 @@ export const updateAdminPost = async (req, res) => {
     const normalizedSlug = String(nextSlug).toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]+/g, "").replace(/-+/g, "-").replace(/^-|-$/g, "") || `post-${Date.now()}`;
     let finalSlug = normalizedSlug;
     let suffix = 2;
-    const siteUrl = String(process.env.PUBLIC_SITE_URL || process.env.APP_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+    const siteUrl = getPublicSiteUrl();
     while (await News.exists({
       _id: { $ne: post._id },
       $or: [

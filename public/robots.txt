@@ -7,3 +7,4 @@ Disallow: /saved
 Disallow: /search
 
 Sitemap: https://www.newsstore24.com/sitemap.xml
+Sitemap: https://www.newsstore24.com/sitemap-news.xml
