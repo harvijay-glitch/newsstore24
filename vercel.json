@@ -2,9 +2,13 @@
   "redirects": [
     { "source": "/livingMagazine", "destination": "/", "permanent": true },
     { "source": "/shopdetail/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
+    { "source": "/shop/storeSearch/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
     { "source": "/society/serial/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
     { "source": "/classification/belonging/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
-    { "source": "/entity/module/(.*)", "destination": "https://newsstore24.com/", "permanent": true }
+    { "source": "/entity/module/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
+    { "source": "/club/label/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
+    { "source": "/rubric/detail/(.*)", "destination": "https://newsstore24.com/", "permanent": true },
+    { "source": "/hierarchy/project/(.*)", "destination": "https://newsstore24.com/", "permanent": true }
   ],
   "rewrites": [
     { "source": "/sitemap-news.xml", "destination": "https://newsstore24-1.onrender.com/api/news/sitemap.xml" },
