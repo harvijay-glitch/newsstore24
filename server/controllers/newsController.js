@@ -26,7 +26,7 @@ export const fetchNews = async (req, res) => {
     const category = allowedCategories.includes(requestedCategory) ? requestedCategory : "general";
     const cacheKey = hasCategoryFilter ? category : "home";
     const cachedResponse = newsResponseCache.get(cacheKey);
-    if (cachedResponse && Date.now() - cachedResponse.createdAt < NEWS_CACHE_TTL_MS) {
+    if (category !== "blog" && cachedResponse && Date.now() - cachedResponse.createdAt < NEWS_CACHE_TTL_MS) {
       return res.json(cachedResponse.payload);
     }
     // Blog is an editorial-only category. Do not call the external news
@@ -80,7 +80,7 @@ export const fetchNews = async (req, res) => {
       total: articles.length,
       articles,
     };
-    newsResponseCache.set(cacheKey, { createdAt: Date.now(), payload });
+    if (category !== "blog") newsResponseCache.set(cacheKey, { createdAt: Date.now(), payload });
     res.json(payload);
   } catch (error) {
     console.log(error);
