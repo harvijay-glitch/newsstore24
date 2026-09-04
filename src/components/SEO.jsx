@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const SITE_NAME = "NewsStore24";
-const DEFAULT_DESCRIPTION = "Latest breaking news, trending stories, AI summaries, business, technology, sports and world updates from NewsStore24.";
+const DEFAULT_DESCRIPTION = "Get the latest breaking news, trending stories and AI-powered summaries across business, technology, sports, world news and more from NewsStore24.";
 const DEFAULT_KEYWORDS = "latest news, breaking news, AI news summaries, business news, technology news, sports news, world news";
 const configuredSiteUrl = import.meta.env.VITE_SITE_URL?.trim().replace(/\/$/, "");
 
