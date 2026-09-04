@@ -40,6 +40,9 @@
 import API from "./api";
 
 const articlesFrom = (response) => response.data.articles || [];
+let recommendationsCache = null;
+let recommendationsCachedAt = 0;
+let recommendationsRequest = null;
 
 export const getTopHeadlines = async (category = "") => {
   const response = await API.get("/news", { params: category ? { category } : {} });
@@ -77,7 +80,17 @@ export const getDailyBrief = async () => {
 };
 
 export const getRecommendations = async () => {
-  const response = await API.get("/news/recommendations");
-  return response.data.articles || [];
+  if (recommendationsCache && Date.now() - recommendationsCachedAt < 10 * 60 * 1000) return recommendationsCache;
+  if (!recommendationsRequest) {
+    recommendationsRequest = API.get("/news/recommendations")
+      .then((response) => response.data.articles || [])
+      .then((articles) => {
+        recommendationsCache = articles;
+        recommendationsCachedAt = Date.now();
+        return articles;
+      })
+      .finally(() => { recommendationsRequest = null; });
+  }
+  return recommendationsRequest;
 };
 // Fetch News

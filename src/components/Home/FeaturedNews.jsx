@@ -37,7 +37,11 @@ function FeaturedNews({ news, loading }) {
           <img
             src={mainNews.image}
             alt={mainNews.title}
-            className="rounded-3xl h-[420px] w-full object-cover"
+            width="900"
+            height="420"
+            loading="lazy"
+            decoding="async"
+            className="aspect-[15/7] h-auto w-full rounded-3xl object-cover"
           />
 
           <p className="text-red-600 font-semibold mt-5">
@@ -69,7 +73,11 @@ function FeaturedNews({ news, loading }) {
               <img
                 src={item.image}
                 alt={item.title}
-                className="w-32 h-24 rounded-xl object-cover"
+                width="128"
+                height="96"
+                loading="lazy"
+                decoding="async"
+                className="h-24 w-32 rounded-xl object-cover"
               />
 
               <div>
