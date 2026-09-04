@@ -27,11 +27,18 @@ function HeroSection({ news, loading }) {
           </div>
 
           {loading ? (
-            <div className="h-[380px] animate-pulse rounded-2xl bg-slate-200" />
+            <div className="grid gap-4 md:grid-cols-[1.35fr_0.85fr]">
+              <div className="animate-pulse rounded-2xl bg-slate-200" style={{ aspectRatio: "20 / 9" }} />
+              <div className="space-y-3">
+                <div className="h-16 animate-pulse rounded-lg bg-slate-200" />
+                <div className="h-16 animate-pulse rounded-lg bg-slate-200" />
+                <div className="h-16 animate-pulse rounded-lg bg-slate-200" />
+              </div>
+            </div>
           ) : mainNews ? (
             <div className="grid gap-4 md:grid-cols-[1.35fr_0.85fr]">
               <article>
-                <img src={mainNews.image} alt={mainNews.title} width="800" height="360" fetchPriority="high" decoding="async" className="aspect-[20/9] h-auto w-full rounded-2xl object-cover" />
+                <img src={mainNews.image} alt={mainNews.title} width="800" height="360" fetchPriority="high" decoding="async" className="w-full rounded-2xl object-cover" style={{ aspectRatio: "20 / 9" }} />
                 <p className="mt-3 text-sm font-bold text-red-600">{mainNews.source?.name || mainNews.source}</p>
                 <h3 className="mt-1 text-xl font-bold leading-tight line-clamp-2">{mainNews.title}</h3>
                 <p className="mt-2 text-xs font-medium text-slate-500">{formatArticleDate(mainNews.publishedAt)}</p>
