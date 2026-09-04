@@ -37,7 +37,9 @@ const replaceMeta = (html, selector, content) => {
   return html.replace(pattern, `$1${escapeAttribute(content)}$2`);
 };
 
-const writePage = async (pathname, title, description, keywords, imageUrl = "") => {
+const escapeJsonForHtml = (value) => JSON.stringify(value).replaceAll("<", "\\u003c");
+
+const writePage = async (pathname, title, description, keywords, imageUrl = "", structuredData = null) => {
   const canonicalUrl = `${siteUrl}${pathname}`;
   let html = template.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttribute(title)}</title>`);
   html = replaceMeta(html, 'name="description"', description);
@@ -54,6 +56,7 @@ const writePage = async (pathname, title, description, keywords, imageUrl = "") 
       `    <meta name="twitter:title" content="${escapeAttribute(title)}" />\n` +
       `    <meta name="twitter:description" content="${escapeAttribute(description)}" />\n` +
       `    <link rel="canonical" href="${escapeAttribute(canonicalUrl)}" />\n` +
+      (structuredData ? `    <script type="application/ld+json">${escapeJsonForHtml(structuredData)}</script>\n` : "") +
       "  </head>",
   );
   const outputDirectory = resolve(dist, pathname.slice(1));
@@ -93,7 +96,19 @@ for (let index = 0; index < articlePaths.length; index += 10) {
     const description = article.metaDescription || article.description || defaultDescription;
     const keywords = article.keywords || defaultKeywords;
     const imageUrl = article.generatedImageUrl || article.image || "";
-    await writePage(pathname, title, description, keywords, imageUrl);
+    await writePage(pathname, title, description, keywords, imageUrl, {
+      "@context": "https://schema.org",
+      "@type": "NewsArticle",
+      mainEntityOfPage: { "@type": "WebPage", "@id": `${siteUrl}${pathname}` },
+      headline: title,
+      description,
+      image: imageUrl ? [imageUrl] : undefined,
+      datePublished: article.publishedAt,
+      dateModified: article.updatedAt || article.publishedAt,
+      author: { "@type": "Person", name: article.authorName || article.author || article.source || "NewsStore24" },
+      publisher: { "@type": "Organization", name: "NewsStore24" },
+      isBasedOn: article.url,
+    });
     return true;
   }));
   articleCount += results.filter(Boolean).length;
