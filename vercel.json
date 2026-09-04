@@ -10,6 +10,14 @@
     { "source": "/rubric/detail/(.*)", "destination": "https://www.newsstore24.com/", "permanent": true },
     { "source": "/hierarchy/project/(.*)", "destination": "https://www.newsstore24.com/", "permanent": true }
   ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "index, follow" }
+      ]
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap-news.xml", "destination": "https://newsstore24-1.onrender.com/api/news/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
