@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 const root = resolve(".");
 const dist = resolve(root, "dist");
 const siteUrl = (process.env.VITE_SITE_URL || "https://www.newsstore24.com").replace(/\/$/, "");
+const apiUrl = (process.env.VITE_API_URL || "https://newsstore24-1.onrender.com/api").replace(/\/$/, "");
 const defaultDescription =
   "Get the latest breaking news, trending stories and AI-powered summaries across business, technology, sports, world news and more from NewsStore24.";
 const defaultKeywords =
@@ -36,9 +37,8 @@ const replaceMeta = (html, selector, content) => {
   return html.replace(pattern, `$1${escapeAttribute(content)}$2`);
 };
 
-const template = await readFile(resolve(dist, "index.html"), "utf8");
-for (const [pathname, [title, description, keywords]] of Object.entries(pages)) {
-  const canonicalUrl = `${siteUrl}${pathname === "/" ? "/" : pathname}`;
+const writePage = async (pathname, title, description, keywords, imageUrl = "") => {
+  const canonicalUrl = `${siteUrl}${pathname}`;
   let html = template.replace(/<title>[^<]*<\/title>/i, `<title>${escapeAttribute(title)}</title>`);
   html = replaceMeta(html, 'name="description"', description);
   html = replaceMeta(html, 'name="keywords"', keywords);
@@ -50,15 +50,53 @@ for (const [pathname, [title, description, keywords]] of Object.entries(pages)) 
     `    <meta property="og:title" content="${escapeAttribute(title)}" />\n` +
       `    <meta property="og:description" content="${escapeAttribute(description)}" />\n` +
       `    <meta property="og:url" content="${escapeAttribute(canonicalUrl)}" />\n` +
+      (imageUrl ? `    <meta property="og:image" content="${escapeAttribute(imageUrl)}" />\n` : "") +
       `    <meta name="twitter:title" content="${escapeAttribute(title)}" />\n` +
       `    <meta name="twitter:description" content="${escapeAttribute(description)}" />\n` +
       `    <link rel="canonical" href="${escapeAttribute(canonicalUrl)}" />\n` +
       "  </head>",
   );
-
   const outputDirectory = resolve(dist, pathname.slice(1));
   await mkdir(outputDirectory, { recursive: true });
   await writeFile(resolve(outputDirectory, "index.html"), html);
+};
+
+const template = await readFile(resolve(dist, "index.html"), "utf8");
+for (const [pathname, [title, description, keywords]] of Object.entries(pages)) {
+  await writePage(pathname, title, description, keywords);
 }
 
-console.log(`Generated crawlable HTML shells for ${Object.keys(pages).length} public routes.`);
+const sitemapResponse = await fetch(`${apiUrl}/news/sitemap.xml`);
+if (!sitemapResponse.ok) throw new Error(`Article sitemap request failed with ${sitemapResponse.status}.`);
+const sitemap = await sitemapResponse.text();
+const articlePaths = [...sitemap.matchAll(/<loc>[^<]*\/article\/([^<]+)<\/loc>/g)]
+  .map((match) => `/article/${match[1]}`)
+  .filter((pathname, index, paths) => paths.indexOf(pathname) === index);
+
+let articleCount = 0;
+for (let index = 0; index < articlePaths.length; index += 10) {
+  const batch = articlePaths.slice(index, index + 10);
+  const results = await Promise.all(batch.map(async (pathname) => {
+    const slug = pathname.slice("/article/".length);
+    const response = await fetch(`${apiUrl}/news/${encodeURIComponent(slug)}`);
+    if (!response.ok) {
+      console.warn(`Skipping ${pathname}: article request failed with ${response.status}.`);
+      return false;
+    }
+    const payload = await response.json();
+    const article = payload.article;
+    if (!article?.title) {
+      console.warn(`Skipping ${pathname}: article payload has no title.`);
+      return false;
+    }
+    const title = article.seoTitle || article.title;
+    const description = article.metaDescription || article.description || defaultDescription;
+    const keywords = article.keywords || defaultKeywords;
+    const imageUrl = article.generatedImageUrl || article.image || "";
+    await writePage(pathname, title, description, keywords, imageUrl);
+    return true;
+  }));
+  articleCount += results.filter(Boolean).length;
+}
+
+console.log(`Generated crawlable HTML shells for ${Object.keys(pages).length} public routes and ${articleCount} articles.`);
