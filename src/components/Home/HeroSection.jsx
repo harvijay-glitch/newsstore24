@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { formatArticleDate } from "../../utils/articleDate";
+import { optimizeImage } from "../../utils/optimizeImage";
 import AIImportanceScore from "../AIImportanceScore";
 import FactCheckBadge from "../FactCheckBadge";
 import TrendingBadge from "../TrendingBadge";
@@ -38,7 +39,7 @@ function HeroSection({ news, loading }) {
           ) : mainNews ? (
             <div className="grid gap-4 md:grid-cols-[1.35fr_0.85fr]">
               <article>
-                <img src={mainNews.image} alt={mainNews.title} width="800" height="360" fetchPriority="high" decoding="async" className="w-full rounded-2xl object-cover" style={{ aspectRatio: "20 / 9" }} />
+                <img src={optimizeImage(mainNews.image, { width: 800 })} alt={mainNews.title} width="800" height="360" fetchPriority="high" decoding="async" className="w-full rounded-2xl object-cover" style={{ aspectRatio: "20 / 9" }} />
                 <p className="mt-3 text-sm font-bold text-red-600">{mainNews.source?.name || mainNews.source}</p>
                 <h3 className="mt-1 text-xl font-bold leading-tight line-clamp-2">{mainNews.title}</h3>
                 <p className="mt-2 text-xs font-medium text-slate-500">{formatArticleDate(mainNews.publishedAt)}</p>
@@ -49,7 +50,7 @@ function HeroSection({ news, loading }) {
               <div className="divide-y divide-slate-200">
                 {sideNews.map((item) => (
                   <article key={item._id || item.id} className="flex gap-3 py-3 first:pt-0">
-                    <img src={item.image} alt={item.title} width="80" height="64" loading="lazy" decoding="async" className="h-16 w-20 shrink-0 rounded-lg object-cover" />
+                    <img src={optimizeImage(item.image, { width: 160 })} alt={item.title} width="80" height="64" loading="lazy" decoding="async" className="h-16 w-20 shrink-0 rounded-lg object-cover" />
                     <div className="min-w-0">
                       <p className="text-xs font-semibold text-red-600">{item.source?.name || item.source}</p>
                       <h3 className="mt-1 text-sm font-bold leading-snug line-clamp-2">{item.title}</h3>

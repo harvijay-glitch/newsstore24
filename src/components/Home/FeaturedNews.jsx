@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { optimizeImage } from "../../utils/optimizeImage";
 
 function FeaturedNews({ news, loading }) {
   if (loading) {
@@ -35,7 +36,7 @@ function FeaturedNews({ news, loading }) {
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <img
-            src={mainNews.image}
+            src={optimizeImage(mainNews.image, { width: 900 })}
             alt={mainNews.title}
             width="900"
             height="420"
@@ -71,7 +72,7 @@ function FeaturedNews({ news, loading }) {
               className="flex gap-4 border-b pb-5"
             >
               <img
-                src={item.image}
+                src={optimizeImage(item.image, { width: 256 })}
                 alt={item.title}
                 width="128"
                 height="96"

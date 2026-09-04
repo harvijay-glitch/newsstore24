@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getNewsByCategory } from "../services/newsService";
+import { optimizeImage } from "../utils/optimizeImage";
 import AIImportanceScore from "../components/AIImportanceScore";
 import FactCheckBadge from "../components/FactCheckBadge";
 import TrendingBadge from "../components/TrendingBadge";
@@ -30,7 +31,7 @@ function CategoryNews({ category, title }) {
         <div className="mt-8 grid gap-7 md:grid-cols-2 lg:grid-cols-3">
           {news.map((item) => (
             <article key={item._id || item.id} className="overflow-hidden rounded-2xl bg-white shadow-md transition-shadow hover:shadow-xl">
-              <img src={item.image} alt={item.title} className="h-52 w-full object-cover" />
+              <img src={optimizeImage(item.image, { width: 480 })} alt={item.title} width="480" height="208" loading="lazy" decoding="async" className="h-52 w-full object-cover" />
               <div className="p-5">
                 <p className="text-sm font-semibold text-red-600">{item.source?.name || item.source}</p>
                 <h2 className="mt-2 text-xl font-bold line-clamp-2">{item.title}</h2>

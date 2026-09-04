@@ -4,6 +4,7 @@ import SEO from "../components/SEO";
 import { getNewsArticle, getRelatedNews } from "../services/newsService";
 import { translateTexts } from "../services/translationService";
 import { formatArticleDate } from "../utils/articleDate";
+import { optimizeImage } from "../utils/optimizeImage";
 
 const safeArticleHtml = (html = "") => {
   if (typeof window === "undefined") return "";
@@ -205,7 +206,7 @@ function Article({ language = "en" }) {
         <p className="mt-6 text-sm font-bold uppercase tracking-[0.16em] text-red-600">{article.category || "News"} · Reported by {article.source || "Original source"}</p>
         <h1 className="mt-3 text-3xl font-black leading-tight text-slate-950 sm:text-4xl md:text-5xl">{displayTitle}</h1>
         {displayExcerpt && <p className="mt-4 max-w-3xl text-lg leading-8 text-slate-700">{displayExcerpt}</p>}
-        {articleImage && <a href={articleImage} target="_blank" rel="noopener noreferrer" className="mt-7 block" title="Open image"><img src={articleImage} alt={displayTitle} className="aspect-video w-full rounded-2xl object-cover shadow-sm transition hover:opacity-90" /></a>}
+        {articleImage && <a href={articleImage} target="_blank" rel="noopener noreferrer" className="mt-7 block" title="Open image"><img src={optimizeImage(articleImage, { width: 900 })} alt={displayTitle} width="900" height="506" fetchPriority="high" decoding="async" className="aspect-video w-full rounded-2xl object-cover shadow-sm transition hover:opacity-90" /></a>}
 
         <div className="mt-4 flex flex-wrap items-center gap-2 border-y border-slate-200 py-3">
           <a href="https://www.google.com/preferences/source?q=https://www.newsstore24.com/" target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center gap-1 rounded-lg border border-red-500 px-4 text-sm font-bold text-slate-900 hover:bg-red-50">Prefer us on <span className="bg-gradient-to-r from-blue-600 via-red-500 to-yellow-500 bg-clip-text text-xl font-black text-transparent">G</span></a>

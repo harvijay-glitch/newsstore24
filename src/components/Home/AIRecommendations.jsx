@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { getRecommendations } from "../../services/newsService";
+import { optimizeImage } from "../../utils/optimizeImage";
 import { getNewsAISummary } from "../../services/aiService";
 import AIImportanceScore from "../AIImportanceScore";
 import TrendingBadge from "../TrendingBadge";
@@ -46,7 +47,7 @@ function AIRecommendations() {
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {articles.map((article) => (
           <article key={article._id || article.id} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
-            <img src={article.image} alt={article.title} width="640" height="360" loading="lazy" decoding="async" className="aspect-video h-auto w-full object-cover" />
+            <img src={optimizeImage(article.image, { width: 640 })} alt={article.title} width="640" height="360" loading="lazy" decoding="async" className="aspect-video h-auto w-full object-cover" />
             <div className="p-4">
               <p className="text-xs font-bold text-red-600">{article.source?.name || article.source}</p>
               <h3 className="mt-2 font-bold leading-snug line-clamp-2">{article.title}</h3>

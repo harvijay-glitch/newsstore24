@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { getNewsAISummary } from "../../services/aiService";
+import { optimizeImage } from "../../utils/optimizeImage";
 import NewsChatModal from "../NewsChatModal";
 import { formatArticleDate } from "../../utils/articleDate";
 import AIImportanceScore from "../AIImportanceScore";
@@ -41,7 +42,7 @@ function TrendingNews({ news, loading, filterLabel }) {
             {news.slice(0, 5).map((item, index) => (
               <article key={item._id || item.id} className="grid gap-5 rounded-2xl bg-white p-5 shadow-md transition-shadow hover:shadow-xl sm:grid-cols-[auto_190px_minmax(0,1fr)] lg:grid-cols-[auto_210px_minmax(0,1fr)_auto] lg:items-center">
                 <div className="self-start text-4xl font-black text-red-500 sm:pt-2">{String(index + 1).padStart(2, "0")}</div>
-                <img src={item.image} alt={item.title} width="210" height="144" loading="lazy" decoding="async" className="aspect-[7/5] h-auto w-full rounded-xl object-cover sm:h-32 sm:w-[190px] lg:h-36 lg:w-[210px]" />
+                <img src={optimizeImage(item.image, { width: 420 })} alt={item.title} width="210" height="144" loading="lazy" decoding="async" className="aspect-[7/5] h-auto w-full rounded-xl object-cover sm:h-32 sm:w-[190px] lg:h-36 lg:w-[210px]" />
                 <div className="min-w-0">
                   <p className="text-sm font-bold text-red-600">{item.source?.name || item.source}</p>
                   <h3 className="mt-2 text-xl font-bold leading-snug line-clamp-2">{item.title}</h3>

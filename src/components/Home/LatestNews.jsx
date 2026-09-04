@@ -4,6 +4,7 @@ import { getNewsAIEnrichment } from "../../services/aiService";
 import { getRecommendations } from "../../services/newsService";
 import NewsChatModal from "../NewsChatModal";
 import { formatArticleDate } from "../../utils/articleDate";
+import { optimizeImage } from "../../utils/optimizeImage";
 import AIImportanceScore from "../AIImportanceScore";
 import FactCheckBadge from "../FactCheckBadge";
 import TrendingBadge from "../TrendingBadge";
@@ -82,7 +83,7 @@ function LatestNews({ news, loading, filterLabel }) {
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayedNews.map((item) => (
             <article key={item._id || item.id} className="overflow-hidden rounded-2xl bg-white shadow-lg transition-shadow hover:shadow-2xl">
-              <img src={item.image} alt={item.title} width="640" height="360" loading="lazy" decoding="async" className="aspect-video h-auto w-full object-cover" />
+              <img src={optimizeImage(item.image, { width: 640 })} alt={item.title} width="640" height="360" loading="lazy" decoding="async" className="aspect-video h-auto w-full object-cover" />
               <div className="p-5">
                 <p className="text-sm font-semibold text-red-600">{item.source?.name || item.source}</p>
                 <h3 className="mt-3 text-xl font-bold line-clamp-2">{item.title}</h3>
