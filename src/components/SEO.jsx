@@ -14,6 +14,7 @@ const pageMetadata = {
   "/stock": { title: "Stock Market News | NewsStore24", description: "Latest stock market news, market movements and investor updates.", keywords: "stock market news, share market news, investing news, market updates" },
   "/technology": { title: "Technology News | NewsStore24", description: "Latest technology news, AI updates, products and digital trends.", keywords: "technology news, AI news, tech updates, digital trends" },
   "/sports": { title: "Sports News | NewsStore24", description: "Latest sports news, match updates and major sporting stories.", keywords: "sports news, match updates, cricket news, football news" },
+  "/blog": { title: "Blog | NewsStore24", description: "NewsStore24 analysis, explainers and editorial stories.", keywords: "NewsStore24 blog, news analysis, news explainers" },
   "/daily-brief": { title: "Daily News Brief | NewsStore24", description: "A quick, AI-powered daily brief of the news that matters.", keywords: "daily news brief, AI news summary, latest headlines, news updates" },
   "/saved": { title: "Saved News | NewsStore24", description: "Your saved stories from NewsStore24.", keywords: DEFAULT_KEYWORDS, noIndex: true },
   "/search": { title: "Search News | NewsStore24", description: "Search NewsStore24.", keywords: DEFAULT_KEYWORDS, noIndex: true },
